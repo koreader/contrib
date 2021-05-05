@@ -112,6 +112,6 @@ function FindHistory:addToMainMenu(menu_items)
     menu_items.findhistory = menuItem
 end
 
-require("plugins/insert_menu").add("findhistory")
+require("insert_menu")
 
 return FindHistory
