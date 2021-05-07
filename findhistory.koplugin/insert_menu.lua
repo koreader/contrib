@@ -1,1 +1,1 @@
-require("plugins/insert_menu").add("findhistory")
+require("frontend/ui/plugin/insert_menu").add("findhistory")
