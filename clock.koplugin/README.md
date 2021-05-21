@@ -7,7 +7,7 @@ Copy the entire folder to koreader/plugins/ folder and restart KOReader. It will
 
 ## Compatibility
 
-Only tested on Kobo mini. Should work on any device.
+Only tested on Kobo mini and Kindle Paperwhite. Should work on any device.
 
 ## Sources
 
