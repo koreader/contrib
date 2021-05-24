@@ -72,7 +72,6 @@ Clock.onCloseWidget = function(self)
   UIManager:setDirty(nil, function()
     return "ui", self[1].dimen
   end)
-  return true
 end
 Clock.onShow = function(self)
   if self.timeout then
