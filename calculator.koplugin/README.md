@@ -1,7 +1,7 @@
 # calculator.koplugin
-A sophisitacted calculator for https://github.com/koreader/koreader.
+A sophisticated calculator for https://github.com/koreader/koreader.
 
-More informations can be found on http://github.com/zwim/calculator.koplugin
+More information can be found on http://github.com/zwim/calculator.koplugin
 
 ## Installation
 
@@ -14,7 +14,7 @@ You find the calculator in `More tools`. Additionally you can put it on a Gestur
 ## Compatibility
 
 Only tested on Tolino and the emulator. Should work on any device.
-Informations on porability would be appreciated -> Please open an issue `Working on xxx` or `Failing on xxx`.
+Information on portability would be appreciated -> Please open an issue `Working on xxx` or `Failing on xxx`.
 
 ## Sources
 
