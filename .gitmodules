@@ -1,0 +1,3 @@
+[submodule "weather.koplugin"]
+	path = weather.koplugin
+	url = git@github.com:roygbyte/koweather.git
