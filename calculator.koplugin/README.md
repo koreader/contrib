@@ -1,3 +1,6 @@
+# Please update to the latest version (1.1.4)
+Versions up to 1.1.2 have a bug, which prevents calculator from start, if a newer version is detected!
+
 # calculator.koplugin
 A sophisticated calculator for https://github.com/koreader/koreader.
 
