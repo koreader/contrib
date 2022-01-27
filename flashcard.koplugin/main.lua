@@ -8,6 +8,10 @@ local _ = require("gettext")
 local T = require("ffi/util").template
 local util = require("ffi/util")
 local DataStorage = require("datastorage")
+local json = require("json")
+local logger = require("logger")
+
+debug = true
 
 CardChoice = {
     NO = 0,
@@ -18,10 +22,18 @@ CardChoice = {
 local Flashcard = WidgetContainer:new{
     name = "flashcard",
     flashcard_amount = 2,
+    flashcard_count = 0,
+    parsing = false,
+    db_path = util.joinPath(DataStorage.getFullDataDir(), "flashcards.json")
 }
 
-local updateDB = function (highlight, choice)
+function Flashcard:displayFlashcardCallback (highlight, choice)
+    self.flashcard_count = self.flashcard_count + 1
     UIManager:show(InfoMessage:new{text=T(_("Timestamp: %1 Choice: %2"), highlight.time, choice), timeout=1})
+    if self.flashcard_count >= self.flashcard_amount then
+        self.flashcard_count = 0
+        self.data = self:parseDB()
+    end
 end
 
 function Flashcard:displayFlashcard(highlight)
@@ -33,43 +45,40 @@ function Flashcard:displayFlashcard(highlight)
             highlight.text
         ),
         no_callback = function ()
-            updateDB(highlight, CardChoice.NO)
+            self:displayFlashcardCallback(highlight, CardChoice.NO)
         end,
         vaguley_callback = function ()
-            updateDB(highlight, CardChoice.VAGUELY)
+            self:displayFlashcardCallback(highlight, CardChoice.VAGUELY)
         end,
         yes_callback = function ()
-            updateDB(highlight, CardChoice.YES)
+            self:displayFlashcardCallback(highlight, CardChoice.YES)
         end
     })
 end
 
-function Flashcard:startFlashcardDisplay()
-    local highlight_data = {title=_("title"), author=_("author"), text=_("text")}
-    local counter = 0;
-    for _ignore0, booknotes in pairs(self.clippings) do
-        highlight_data.title = booknotes.title
-        highlight_data.author = booknotes.author
-        for _ignore1, chapter in ipairs(booknotes) do
-            for _ignore2, clipping in ipairs(chapter) do
-                if clipping.sort ~= "highlight" or clipping.sort ~= "note" then
-                    highlight_data.time = clipping.time
-                    if clipping.text then
-                        highlight_data.text = clipping.text
-                    end
-                    if clipping.note then
-                        highlight_data.text = highlight_data.text .. clipping.note
-                    end
-                    self:displayFlashcard(highlight_data)
+function Flashcard:getHighlights()
+    local highlights = {}
+    local i = 0
 
-                    counter = counter + 1
-                    if counter >= self.flashcard_amount then break end
-                end
+    for _ignore0, clippings in pairs(self.data) do
+        for _ignore1, clipping in pairs(clippings) do
+            highlights[i] = clipping
+            i = i + 1
+            if i >= self.flashcard_amount then
+                break
             end
-            if counter >= self.flashcard_amount then break end
         end
-        if counter >= self.flashcard_amount then break end
     end
+
+    logger.dbg("highlights: ", highlights)
+    return highlights
+end
+
+function Flashcard:startFlashcardDisplay()
+    for _ignore, highlight in pairs(self:getHighlights()) do
+        self:displayFlashcard(highlight)
+    end
+    self.data = self:parseDB()
 end
 
 function Flashcard:getClippings()
@@ -82,17 +91,74 @@ function Flashcard:getClippings()
         end
     end
 
+    logger.dbg("clippings: ", clippings)
     return clippings
 end
 
+function Flashcard:parseDB()
+    self.parsing = true
+
+    local clippings = self:getClippings()
+    local data = {}
+
+    local file = io.open(self.db_path, "r")
+    if debug then
+        file = nil
+    end
+    if file then
+        local raw_data = file.read()
+        if raw_data then
+            local parsed_data = json.decode(raw_data)
+            if parsed_data then
+                data = parsed_data
+            end
+        end
+    end
+    for group=0,5 do
+        if not data[group] then
+            data[group] = {}
+        end
+    end
+    local found, time
+    for _ignore0, booknotes in pairs(clippings) do
+        for _ignore1, chapter in ipairs(booknotes) do
+            for _ignore2, clipping in ipairs(chapter) do
+                clipping.title = booknotes.title
+                clipping.author = booknotes.author
+                if clipping.sort == "highlight" then
+                    found = false
+                    time = clipping.time
+                    for group=0,5,-1 do
+                        if data[group][time] then
+                            found = true
+                            break
+                        end
+                    end
+                    if not found then
+                        data[0][time] = clipping
+                    end
+                end
+            end
+        end
+    end
+
+    self.parsing = false
+
+    logger.dbg("data: ", data)
+    return data
+end
+
 function Flashcard:init()
-    self.clippings = self:getClippings()
+    self.data = self:parseDB()
 
     self.ui.menu:registerToMainMenu(self)
 end
 
 function Flashcard:addToMainMenu(menu_items)
     menu_items.flashcard = {
+        enabled_func = function ()
+            return not self.parsing
+        end,
         text = _("Flashcard Trainer"),
         callback = function()
                 local spinwidget = SpinWidget:new{
