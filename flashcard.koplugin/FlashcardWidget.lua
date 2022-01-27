@@ -22,30 +22,35 @@ local FlashcardWidget = InputContainer:new{
     text = _("no text"),
     title_text = _("no title"),
     face = Font:getFace("infofont"),
-    no_callback = function() end,
-    vaguley_callback = function() end,
-    yes_callback = function() end,
+    no_callback = function()
+    end,
+    vaguley_callback = function()
+    end,
+    yes_callback = function()
+    end,
     margin = Size.margin.default,
-    padding = Size.padding.default,
+    padding = Size.padding.default
 }
 
 function FlashcardWidget:init()
     if self.dismissable then
         if Device:isTouchDevice() then
-            self.ges_events.TapClose = {
-                GestureRange:new{
-                    ges = "tap",
-                    range = Geom:new{
-                        x = 0, y = 0,
-                        w = Screen:getWidth(),
-                        h = Screen:getHeight(),
-                    }
+            self.ges_events.TapClose = {GestureRange:new{
+                ges = "tap",
+                range = Geom:new{
+                    x = 0,
+                    y = 0,
+                    w = Screen:getWidth(),
+                    h = Screen:getHeight()
                 }
-            }
+            }}
         end
         if Device:hasKeys() then
             self.key_events = {
-                Close = { {Device.input.group.Back}, doc = "cancel" }
+                Close = {
+                    {Device.input.group.Back},
+                    doc = "cancel"
+                }
             }
         end
     end
@@ -56,46 +61,40 @@ function FlashcardWidget:init()
         title = self.title_text,
         title_shrink_font_to_fit = true,
         show_parent = self,
-        width = width,
+        width = width
     }
     local content = ScrollTextWidget:new{
-            text = self.text,
-            face = self.face,
-            width = width,
-            height = Screen:getHeight() * 0.80
+        text = self.text,
+        face = self.face,
+        width = width,
+        height = Screen:getHeight() * 0.80
     }
 
     local button_table = ButtonTable:new{
         width = content:getSize().w,
         button_font_face = "cfont",
         button_font_size = 20,
-        buttons = {
-            {
-                {
-                    text = _("No"),
-                    callback = function()
-                        self.no_callback()
-                        UIManager:close(self)
-                    end,
-                },
-                {
-                    text = _("Vaguely"),
-                    callback = function()
-                        self.vaguley_callback()
-                        UIManager:close(self)
-                    end,
-                },
-                {
-                    text = _("Yes"),
-                    callback = function()
-                        self.yes_callback()
-                        UIManager:close(self)
-                    end,
-                },
-            },
-        },
+        buttons = {{{
+            text = _("No"),
+            callback = function()
+                self.no_callback()
+                UIManager:close(self)
+            end
+        }, {
+            text = _("Vaguely"),
+            callback = function()
+                self.vaguley_callback()
+                UIManager:close(self)
+            end
+        }, {
+            text = _("Yes"),
+            callback = function()
+                self.yes_callback()
+                UIManager:close(self)
+            end
+        }}},
         zero_sep = true,
-        show_parent = self,
+        show_parent = self
     }
 
     self[1] = CenterContainer:new{
@@ -111,8 +110,10 @@ function FlashcardWidget:init()
                 title,
                 content,
                 -- Add same vertical space after than before content
-                VerticalSpan:new{ width = self.margin + self.padding },
-                button_table,
+                VerticalSpan:new{
+                    width = self.margin + self.padding
+                },
+                button_table
             }
         }
     }

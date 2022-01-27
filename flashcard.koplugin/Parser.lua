@@ -8,10 +8,14 @@ local util = require("util")
 local _ = require("gettext")
 local T = require("ffi/util").template
 
-local Parser = {history_dir = DataStorage:getDataDir() .. "/history",}
+local Parser = {
+    history_dir = DataStorage:getDataDir() .. "/history"
+}
 
 function Parser:new(o)
-    if o == nil then o = {} end
+    if o == nil then
+        o = {}
+    end
     setmetatable(o, self)
     self.__index = self
     return o
@@ -25,7 +29,7 @@ local extensions = {
     [".mobi"] = true,
     [".txt"] = true,
     [".html"] = true,
-    [".doc"] = true,
+    [".doc"] = true
 }
 
 -- first attempt to parse from document metadata
@@ -50,23 +54,16 @@ function Parser:getTitle(line, path)
     if not author then
         _, _, title, author = line:find("(.-)%s*-%s*(.*)")
     end
-    if not title then title = line end
+    if not title then
+        title = line
+    end
     return title:match("^%s*(.-)%s*$"), author
 end
 
 local keywords = {
-    ["highlight"] = {
-        "Highlight",
-        "标注",
-    },
-    ["note"] = {
-        "Note",
-        "笔记",
-    },
-    ["bookmark"] = {
-        "Bookmark",
-        "书签",
-    },
+    ["highlight"] = {"Highlight", "标注"},
+    ["note"] = {"Note", "笔记"},
+    ["bookmark"] = {"Bookmark", "书签"}
 }
 
 local months = {
@@ -86,11 +83,13 @@ local months = {
 
 local pms = {
     ["PM"] = 12,
-    ["下午"] = 12,
+    ["下午"] = 12
 }
 
 function Parser:getTime(line)
-    if not line then return end
+    if not line then
+        return
+    end
     local _, _, year, month, day = line:find("(%d+)年(%d+)月(%d+)日")
     if not year or not month or not day then
         _, _, year, month, day = line:find("(%d%d%d%d)-(%d%d)-(%d%d)")
@@ -115,8 +114,12 @@ function Parser:getTime(line)
             end
         end
         local time = os.time({
-            year = year, month = month, day = day,
-            hour = hour, min = minute, sec = second,
+            year = year,
+            month = month,
+            day = day,
+            hour = hour,
+            min = minute,
+            sec = second
         })
 
         return time
@@ -152,28 +155,29 @@ end
 
 -- get PNG string and md5 hash
 function Parser:getImage(image)
-    --DEBUG("image", image)
+    -- DEBUG("image", image)
     local doc = DocumentRegistry:openDocument(image.file)
     if doc then
-        local png = doc:clipPagePNGString(image.pos0, image.pos1,
-                image.pboxes, image.drawer)
-        --doc:clipPagePNGFile(image.pos0, image.pos1,
-                --image.pboxes, image.drawer, "/tmp/"..md5(png)..".png")
+        local png = doc:clipPagePNGString(image.pos0, image.pos1, image.pboxes, image.drawer)
+        -- doc:clipPagePNGFile(image.pos0, image.pos1,
+        -- image.pboxes, image.drawer, "/tmp/"..md5(png)..".png")
         doc:close()
-        if png then return { png = png, hash = md5(png) } end
+        if png then
+            return {
+                png = png,
+                hash = md5(png)
+            }
+        end
     end
 end
 
 function Parser:parseHighlight(highlights, bookmarks, book)
-    --DEBUG("book", book.file)
+    -- DEBUG("book", book.file)
 
     -- create a translated pattern that matches bookmark auto-text
     -- see ReaderBookmark:getBookmarkAutoText and ReaderBookmark:getBookmarkPageString
     --- @todo Remove this once we get rid of auto-text or improve the data model.
-    local pattern = "^" .. T(_("Page %1 %2 @ %3"),
-                               "%[?%d*%]?%d+",
-                               "(.*)",
-                               "%d%d%d%d%-%d%d%-%d%d %d%d:%d%d:%d%d") .. "$"
+    local pattern = "^" .. T(_("Page %1 %2 @ %3"), "%[?%d*%]?%d+", "(.*)", "%d%d%d%d%-%d%d%-%d%d %d%d:%d%d:%d%d") .. "$"
 
     for page, items in pairs(highlights) do
         for _, item in ipairs(items) do
@@ -192,12 +196,15 @@ function Parser:parseHighlight(highlights, bookmarks, book)
                     end
                 end
             end
-            if item.text == "" and item.pos0 and item.pos1 and
-                    item.pos0.x and item.pos0.y and
-                    item.pos1.x and item.pos1.y then
+            if item.text == "" and item.pos0 and item.pos1 and item.pos0.x and item.pos0.y and item.pos1.x and
+                item.pos1.y then
                 -- highlights in reflowing mode don't have page in pos
-                if item.pos0.page == nil then item.pos0.page = page end
-                if item.pos1.page == nil then item.pos1.page = page end
+                if item.pos0.page == nil then
+                    item.pos0.page = page
+                end
+                if item.pos1.page == nil then
+                    item.pos1.page = page
+                end
                 local image = {}
                 image.file = book.file
                 image.pos0, image.pos1 = item.pos0, item.pos1
@@ -207,26 +214,26 @@ function Parser:parseHighlight(highlights, bookmarks, book)
             end
             --- @todo Store chapter info when exporting highlights.
             if clipping.text and clipping.text ~= "" or clipping.image then
-                table.insert(book, { clipping })
+                table.insert(book, {clipping})
             end
         end
     end
-    table.sort(book, function(v1, v2) return v1[1].page < v2[1].page end)
+    table.sort(book, function(v1, v2)
+        return v1[1].page < v2[1].page
+    end)
 end
 
 function Parser:parseHistoryFile(clippings, history_file, doc_file)
-    if lfs.attributes(history_file, "mode") ~= "file"
-    or not history_file:find(".+%.lua$") then
+    if lfs.attributes(history_file, "mode") ~= "file" or not history_file:find(".+%.lua$") then
         return
     end
-    if lfs.attributes(doc_file, "mode") ~= "file" then return end
+    if lfs.attributes(doc_file, "mode") ~= "file" then
+        return
+    end
     local ok, stored = pcall(dofile, history_file)
     if ok then
         if not stored then
-            logger.warn("An empty history file ",
-                        history_file,
-                        "has been found. The book associated is ",
-                        doc_file)
+            logger.warn("An empty history file ", history_file, "has been found. The book associated is ", doc_file)
             return
         elseif not stored.highlight then
             return
@@ -236,7 +243,7 @@ function Parser:parseHistoryFile(clippings, history_file, doc_file)
         clippings[title] = {
             file = doc_file,
             title = title,
-            author = author,
+            author = author
         }
         self:parseHighlight(stored.highlight, stored.bookmarks, clippings[title])
     end
@@ -245,15 +252,11 @@ end
 function Parser:parseHistory()
     local clippings = {}
     for f in lfs.dir(self.history_dir) do
-        self:parseHistoryFile(clippings,
-                              self.history_dir .. "/" .. f,
-                              DocSettings:getPathFromHistory(f) .. "/" ..
-                              DocSettings:getNameFromHistory(f))
+        self:parseHistoryFile(clippings, self.history_dir .. "/" .. f,
+            DocSettings:getPathFromHistory(f) .. "/" .. DocSettings:getNameFromHistory(f))
     end
     for _, item in ipairs(ReadHistory.hist) do
-        self:parseHistoryFile(clippings,
-                              DocSettings:getSidecarFile(item.file),
-                              item.file)
+        self:parseHistoryFile(clippings, DocSettings:getSidecarFile(item.file), item.file)
     end
 
     return clippings
