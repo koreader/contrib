@@ -153,7 +153,7 @@ function Flashcard:addToMainMenu(menu_items)
             callback = function()
                 UIManager:show(ConfirmBox:new{
                     text = _("Are you sure you want to reset progress?"),
-                    ok_text = _("Yes"),
+                    ok_text = _("Reset"),
                     ok_callback = function()
                         self.db:clearDB()
                     end
