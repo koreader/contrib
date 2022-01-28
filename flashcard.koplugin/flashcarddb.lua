@@ -1,12 +1,12 @@
 local util = require("ffi/util")
-local Parser = require("Parser")
+local Parser = require("parser")
 local DataStorage = require("datastorage")
 local json = require("json")
 local logger = require("logger")
 
 local FlashcardDB = {
     parsing = false,
-    db_path = util.joinPath(DataStorage.getFullDataDir(), "flashcards.json")
+    db_path = util.joinPath(DataStorage:getFullDataDir(), "flashcards.json")
 }
 
 function FlashcardDB:new()
@@ -107,7 +107,6 @@ function FlashcardDB:parseDB()
                         clipping.interval = 0
                         clipping.n = 0
                         data[time] = clipping
-                    else
                     end
                 end
             end

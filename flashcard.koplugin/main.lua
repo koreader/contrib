@@ -7,7 +7,7 @@ local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local _ = require("gettext")
 local T = require("ffi/util").template
 local logger = require("logger")
-local FlashcardDB = require('FlashcardDB')
+local FlashcardDB = require('flashcarddb')
 
 CardChoice = {
     NO = 0,
