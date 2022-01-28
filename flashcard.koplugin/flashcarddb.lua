@@ -1,12 +1,13 @@
 local util = require("ffi/util")
-local Parser = require("parser")
+local Parser = require("highlightparser")
 local DataStorage = require("datastorage")
 local json = require("json")
 local logger = require("logger")
 
 local FlashcardDB = {
     parsing = false,
-    db_path = util.joinPath(DataStorage:getFullDataDir(), "flashcards.json")
+    db_path = util.joinPath(DataStorage:getFullDataDir(), "flashcards.json"),
+    parser = Parser:new()
 }
 
 function FlashcardDB:new()
@@ -17,10 +18,7 @@ function FlashcardDB:new()
 end
 
 function FlashcardDB:getClippings()
-    local parser = Parser:new{
-        history_dir = "./history"
-    }
-    local clippings = parser:parseHistory()
+    local clippings = self.parser:parseHistory()
     -- Clean empty clippings
     for title, booknotes in pairs(clippings) do
         if #booknotes == 0 then
