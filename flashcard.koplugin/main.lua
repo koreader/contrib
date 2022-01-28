@@ -122,7 +122,7 @@ function Flashcard:addToMainMenu(menu_items)
         enabled_func = function()
             return not self.db.parsing
         end,
-        text = _("Flashcard Trainer"),
+        text = _("Flashcard trainer"),
         sub_item_table = {{
             text = _("Start"),
             callback = function()
