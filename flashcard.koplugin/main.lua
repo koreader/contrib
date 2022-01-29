@@ -14,14 +14,14 @@ local logger = require("logger")
 local CardChoice = {
     NO = 0,
     YES = 1,
-    VAGUELY = 2
+    VAGUELY = 2,
 }
 
 local Flashcard = WidgetContainer:new{
     name = "flashcard",
     seconds_in_a_day = 86400,
     flashcard_amount = 5,
-    flashcard_count = 0
+    flashcard_count = 0,
 }
 
 local displayFlashcardCallbackYesChoice = function(flashcard_data)
@@ -71,9 +71,7 @@ local displayFlashcardCallback = function(filename, highlight, choice)
     else
         flashcard_data = displayFlashcardCallbackNoChoice(flashcard_data)
     end
-    if flashcard_data.efactor < 1.3 then
-        flashcard_data.efactor = 1.3
-    end
+    if flashcard_data.efactor < 1.3 then flashcard_data.efactor = 1.3 end
 
     local docinfo = DocSettings:open(filename)
     docinfo.data.highlight[highlight.page][highlight.highlight_index].flashcard_data = flashcard_data
@@ -81,15 +79,7 @@ local displayFlashcardCallback = function(filename, highlight, choice)
 end
 
 function Flashcard:DocHasHighlights(docinfo)
-    if docinfo then
-        if docinfo.data then
-            if docinfo.data.highlight then
-                if #docinfo.data.highlight then
-                    return true
-                end
-            end
-        end
-    end
+    if docinfo and docinfo.data and docinfo.data.highlight and #docinfo.data.highlight then return true end
     return false
 end
 
@@ -111,7 +101,7 @@ function Flashcard:getHighlights()
                             last_shown = 0,
                             efactor = 2.5,
                             interval = 0,
-                            n = 0
+                            n = 0,
                         }
                         docinfo.data.highlight[page][highlight_index].flashcard_data = flashcard_data
                         flush_doc = true
@@ -122,35 +112,29 @@ function Flashcard:getHighlights()
                             page = page,
                             highlight_index = highlight_index,
                             flashcard_data = flashcard_data,
-                            text = highlight.text
+                            text = highlight.text,
                         }
                         if not res_highlights[filename] then
                             res_highlights[filename] = {
                                 title = docinfo.data.stats.title,
                                 author = docinfo.data.stats.authors,
-                                highlights = {}
+                                highlights = {},
                             }
                         end
                         table.insert(res_highlights[filename].highlights, highlight)
                         highlight_count = highlight_count + 1
                     end
                     if highlight_count >= self.flashcard_amount then
-                        if flush_doc then
-                            docinfo:flush()
-                        end
+                        if flush_doc then docinfo:flush() end
                         return res_highlights
                     end
                 end
             end
         end
-        if flush_doc then
-            docinfo:flush()
-        end
+        if flush_doc then docinfo:flush() end
     end
 
-    if #res_highlights < self.flashcard_amount then
-        self.flashcard_amount = #res_highlights
-    end
+    if #res_highlights < self.flashcard_amount then self.flashcard_amount = #res_highlights end
 
     logger.dbg("res_highlights: ", res_highlights)
     return res_highlights
@@ -165,31 +149,25 @@ function Flashcard:displayFlashcards()
                 text = T(_("Title: %1\r\nAuthor: %2\r\n\r\n%3"), metadata.title, metadata.author, highlight.text),
                 width = Screen:getWidth(),
                 height = Screen:getHeight(),
-                buttons_table = {
-                    {
-                        {
-                            text = _("No"),
-                            callback = function()
-                                UIManager:close(textviewer)
-                                displayFlashcardCallback(filename, highlight, CardChoice.NO)
-                            end,
-                        },
-                        {
-                            text = _("Vaguely"),
-                            callback = function()
-                                UIManager:close(textviewer)
-                                displayFlashcardCallback(filename, highlight, CardChoice.VAGUELY)
-                            end,
-                        },
-                        {
-                            text = _("Yes"),
-                            callback = function()
-                                UIManager:close(textviewer)
-                                displayFlashcardCallback(filename, highlight, CardChoice.YES)
-                            end,
-                        }
-                    },
-                },
+                buttons_table = {{{
+                    text = _("No"),
+                    callback = function()
+                        UIManager:close(textviewer)
+                        displayFlashcardCallback(filename, highlight, CardChoice.NO)
+                    end,
+                }, {
+                    text = _("Vaguely"),
+                    callback = function()
+                        UIManager:close(textviewer)
+                        displayFlashcardCallback(filename, highlight, CardChoice.VAGUELY)
+                    end,
+                }, {
+                    text = _("Yes"),
+                    callback = function()
+                        UIManager:close(textviewer)
+                        displayFlashcardCallback(filename, highlight, CardChoice.YES)
+                    end,
+                }}},
             }
             UIManager:show(textviewer)
         end
@@ -203,6 +181,7 @@ end
 function Flashcard:addToMainMenu(menu_items)
     menu_items.flashcard = {
         text = _("Flashcard trainer"),
+        sorting_hint = "tools",
         callback = function()
             local spinwidget = SpinWidget:new{
                 title_text = _("Flashcard Trainer"),
@@ -216,10 +195,10 @@ function Flashcard:addToMainMenu(menu_items)
                 callback = function(spin)
                     self.flashcard_amount = spin.value
                     self:displayFlashcards()
-                end
+                end,
             }
             UIManager:show(spinwidget)
-        end
+        end,
     }
 end
 
