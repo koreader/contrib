@@ -11,8 +11,6 @@ Tested on Kobo Aura
 
 # Todo
 * Add a link to the bookmark location
-* Not spawn all cards at once
-  * The close button should close the session
 * I should ask the user how long the session should be and not how many cards to shown
 * Choose a doc to get cards from
   * When a doc is open, by default only highlights corresponding to him should be shown
