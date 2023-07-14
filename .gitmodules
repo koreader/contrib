@@ -4,3 +4,6 @@
 [submodule "crossword.koplugin"]
 	path = crossword.koplugin
 	url = git@github.com:roygbyte/crossword.koplugin.git
+[submodule "dictionarymode.koplugin"]
+	path = dictionarymode.koplugin
+	url = git@github.com:ckilb/koreader-dictionarymode.git
