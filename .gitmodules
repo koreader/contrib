@@ -7,3 +7,6 @@
 [submodule "dictionarymode.koplugin"]
 	path = dictionarymode.koplugin
 	url = git@github.com:ckilb/koreader-dictionarymode.git
+[submodule "pocketbooksync.koplugin"]
+	path = pocketbooksync.koplugin
+	url = git@github.com:ckilb/pocketbooksync.koplugin.git
