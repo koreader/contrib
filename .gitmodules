@@ -10,3 +10,6 @@
 [submodule "pocketbooksync.koplugin"]
 	path = pocketbooksync.koplugin
 	url = git@github.com:ckilb/pocketbooksync.koplugin.git
+[submodule "gemini.koplugin"]
+	path = gemini.koplugin
+	url = https://repo.or.cz/gemini.koplugin.git
