@@ -28,7 +28,7 @@ local function doBuildHistory()
                 or require("apps/filemanager/filemanagerutil").getDefaultDir()
                 or "."
     local file = io.popen("find '" .. dir .. "' -name 'metadata.*.lua' -exec stat -c '%N %Y' {} \\;")
-    local records = {}
+    local records = ReadHistory.hist
     for line in file:lines() do
         local f, t = line:match("(.+) (%d+)")
         table.insert(records, {
