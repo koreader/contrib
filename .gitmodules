@@ -13,3 +13,6 @@
 [submodule "gemini.koplugin"]
 	path = gemini.koplugin
 	url = https://repo.or.cz/gemini.koplugin.git
+[submodule "crashlog.koplugin"]
+	path = crashlog.koplugin
+	url = https://github.com/billiam/crashlog.koplugin.git
