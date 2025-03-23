@@ -16,3 +16,6 @@
 [submodule "crashlog.koplugin"]
 	path = crashlog.koplugin
 	url = https://github.com/billiam/crashlog.koplugin.git
+[submodule "hardcoverapp.koplugin"]
+	path = hardcoverapp.koplugin
+	url = https://github.com/billiam/hardcoverapp.koplugin
