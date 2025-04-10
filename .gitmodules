@@ -19,3 +19,6 @@
 [submodule "hardcoverapp.koplugin"]
 	path = hardcoverapp.koplugin
 	url = https://github.com/billiam/hardcoverapp.koplugin
+[submodule "provider-webdav-highlights.koplugin"]
+	path = provider-webdav-highlights.koplugin
+	url = https://github.com/fairlygood/provider-webdav-highlights.koplugin.git
