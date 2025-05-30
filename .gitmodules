@@ -22,3 +22,6 @@
 [submodule "provider-webdav-highlights.koplugin"]
 	path = provider-webdav-highlights.koplugin
 	url = https://github.com/fairlygood/provider-webdav-highlights.koplugin.git
+[submodule "digitalclock.koplugin"]
+	path = digitalclock.koplugin
+	url = https://github.com/DucNg/digitalclock.koplugin.git
