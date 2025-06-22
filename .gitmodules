@@ -25,3 +25,6 @@
 [submodule "digitalclock.koplugin"]
 	path = digitalclock.koplugin
 	url = https://github.com/DucNg/digitalclock.koplugin.git
+[submodule "readingruler.koplugin"]
+	path = readingruler.koplugin
+	url = https://github.com/syakhisk/readingruler.koplugin
