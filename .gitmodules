@@ -1,6 +1,6 @@
 [submodule "weather.koplugin"]
 	path = weather.koplugin
-	url = git@github.com:roygbyte/koweather.git
+	url = git@github.com:roygbyte/weather.koplugin
 [submodule "crossword.koplugin"]
 	path = crossword.koplugin
 	url = git@github.com:roygbyte/crossword.koplugin.git
