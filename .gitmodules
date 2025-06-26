@@ -28,3 +28,6 @@
 [submodule "readingruler.koplugin"]
 	path = readingruler.koplugin
 	url = https://github.com/syakhisk/readingruler.koplugin
+[submodule "kochess.koplugin"]
+	path = kochess.koplugin
+	url = https://github.com/bateast/kochess
