@@ -31,3 +31,7 @@
 [submodule "kochess.koplugin"]
 	path = kochess.koplugin
 	url = https://github.com/bateast/kochess
+[submodule "review.koplugin"]
+	path = review.koplugin
+	url = git@framagit.org:Brumaire/koreader-review-annotations-plugins.git
+	branch = koreader-contrib-submodule
