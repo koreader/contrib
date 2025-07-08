@@ -18,4 +18,3 @@ or
 
 Since the token is very long, you may find it easier to create a random string in Koreader, then edit the file `settings.reader.lua` located in Koreader -> Settings: find your random string and paste your token over it. Alternatively, create a file with your token and save it to your Koreader docs, then open it from within Koreader like any other book, copy the token, and paste it in the relevant settings field.
 
-
