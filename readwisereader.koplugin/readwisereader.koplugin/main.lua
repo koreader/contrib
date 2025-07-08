@@ -13,6 +13,7 @@
 -- - Handles incremental sync with cleanup of archived content
 -- - Fixed author metadata handling for proper highlight export
 -- - Enhanced URL corruption detection and repair for all image sources
+-- - Simple adaptive rate limiting to prevent API errors
 -- ===============================================================================
 
 local BD = require("ui/bidi")
@@ -92,10 +93,67 @@ function ReadwiseReader:init()
     -- Initialize author metadata storage
     self.document_authors = settings.document_authors or {}
 
+    -- Simple rate limiting state
+    self.api_call_count = 0
+    self.sync_start_time = nil
+    self.needs_rate_limiting = false
+
     -- Initialize highlights parser
     self.parser = MyClipping:new{}
     
     self.ui.menu:registerToMainMenu(self)
+end
+
+-- ===============================================================================
+-- SIMPLE ADAPTIVE RATE LIMITING
+-- ===============================================================================
+
+function ReadwiseReader:checkRateLimit()
+    -- Only start counting after we make some API calls
+    if self.api_call_count == 0 then
+        self.sync_start_time = os.time()
+        self.api_call_count = 1
+        return
+    end
+    
+    self.api_call_count = self.api_call_count + 1
+    
+    -- After 5 API calls, check if we need rate limiting
+    if self.api_call_count == 5 and not self.needs_rate_limiting then
+        local elapsed = os.time() - self.sync_start_time
+        if elapsed < 20 then -- 5 calls in under 20 seconds suggests large library
+            self.needs_rate_limiting = true
+            logger.dbg("ReadwiseReader: enabling rate limiting after", self.api_call_count, "calls in", elapsed, "seconds")
+        end
+    end
+    
+    -- Apply rate limiting if needed
+    if self.needs_rate_limiting and self.api_call_count > 3 then
+        -- Reader API limit is 20/minute, so wait 3 seconds between calls to be safe
+        logger.dbg("ReadwiseReader: applying 3 second rate limit delay")
+        socket.sleep(3)
+    end
+end
+
+function ReadwiseReader:handleRetryAfter(code, headers)
+    -- Handle 429 rate limit responses
+    if code == 429 then
+        local retry_after = 60 -- Default to 60 seconds
+        if headers and headers["retry-after"] then
+            retry_after = tonumber(headers["retry-after"]) or 60
+        end
+        
+        -- Enable rate limiting for future calls
+        self.needs_rate_limiting = true
+        
+        logger.warn("ReadwiseReader: hit rate limit, waiting", retry_after, "seconds")
+        self:showProgress(string.format("Rate limited, waiting %d seconds…", retry_after))
+        socket.sleep(retry_after)
+        self:hideProgress()
+        
+        return true -- Indicate we should retry
+    end
+    return false
 end
 
 -- ===============================================================================
@@ -917,6 +975,9 @@ function ReadwiseReader:callAPI(method, endpoint, body, quiet)
     
     logger.dbg("ReadwiseReader:callAPI:", method, endpoint)
     
+    -- Apply rate limiting before making the call
+    self:checkRateLimit()
+    
     socketutil:set_timeout(10, 60)
     local code, resp_headers, status = socket.skip(1, http.request(request))
     socketutil:reset_timeout()
@@ -927,6 +988,15 @@ function ReadwiseReader:callAPI(method, endpoint, body, quiet)
             UIManager:show(InfoMessage:new{ text = "Network error connecting to Readwise Reader." })
         end
         return nil, "network_error"
+    end
+    
+    -- Handle rate limiting with retry
+    if self:handleRetryAfter(code, resp_headers) then
+        -- Retry the request once after rate limit delay
+        logger.dbg("ReadwiseReader:callAPI: retrying after rate limit")
+        socketutil:set_timeout(10, 60)
+        code, resp_headers, status = socket.skip(1, http.request(request))
+        socketutil:reset_timeout()
     end
     
     if code == 200 or code == 204 then
@@ -960,38 +1030,51 @@ function ReadwiseReader:getDocumentList()
     local locations = {"new", "later", "shortlist"}
     
     for _, location in ipairs(locations) do
-        logger.dbg("ReadwiseReader:getDocumentList: fetching documents from location:", location)
-        next_cursor = nil
+        -- Check if this location is excluded before fetching
+        local skip_location = false
+        for _, excluded_location in ipairs(self.excluded_locations) do
+            if excluded_location == location then
+                skip_location = true
+                break
+            end
+        end
         
-        repeat
-            local endpoint = "/list/?location=" .. location .. "&withHtmlContent=true&withTags=true"
-            if next_cursor and type(next_cursor) == "string" and next_cursor ~= "" then
-                endpoint = endpoint .. "&pageCursor=" .. next_cursor
-            end
+        if skip_location then
+            logger.dbg("ReadwiseReader:getDocumentList: skipping excluded location:", location)
+        else
+            logger.dbg("ReadwiseReader:getDocumentList: fetching documents from location:", location)
+            next_cursor = nil
             
-            local result, err = self:callAPI("GET", endpoint)
-            
-            if not result then
-                logger.err("ReadwiseReader:getDocumentList: error getting document list for location", location, ":", err)
-                return nil
-            end
-            
-            if result.results then
-                for _, doc in ipairs(result.results) do
-                    if doc.reading_progress < 1 then
-                        table.insert(documents, doc)
+            repeat
+                local endpoint = "/list/?location=" .. location .. "&withHtmlContent=true&withTags=true"
+                if next_cursor and type(next_cursor) == "string" and next_cursor ~= "" then
+                    endpoint = endpoint .. "&pageCursor=" .. next_cursor
+                end
+                
+                local result, err = self:callAPI("GET", endpoint)
+                
+                if not result then
+                    logger.err("ReadwiseReader:getDocumentList: error getting document list for location", location, ":", err)
+                    return nil
+                end
+                
+                if result.results then
+                    for _, doc in ipairs(result.results) do
+                        if doc.reading_progress < 1 then
+                            table.insert(documents, doc)
+                        end
                     end
                 end
-            end
-            
-            if result.nextPageCursor and type(result.nextPageCursor) == "string" and result.nextPageCursor ~= "" then
-                next_cursor = result.nextPageCursor
-            else
-                next_cursor = nil
-            end
-            
-            logger.dbg("ReadwiseReader:getDocumentList: processed page for location", location, ", next_cursor:", next_cursor)
-        until not next_cursor
+                
+                if result.nextPageCursor and type(result.nextPageCursor) == "string" and result.nextPageCursor ~= "" then
+                    next_cursor = result.nextPageCursor
+                else
+                    next_cursor = nil
+                end
+                
+                logger.dbg("ReadwiseReader:getDocumentList: processed page for location", location, ", next_cursor:", next_cursor)
+            until not next_cursor
+        end
     end
     
     logger.dbg("ReadwiseReader:getDocumentList: total documents retrieved:", #documents)
@@ -1589,6 +1672,11 @@ function ReadwiseReader:synchronize()
     end
     
     UIManager:close(info)
+    
+    -- Reset rate limiting for new sync session
+    self.api_call_count = 0
+    self.sync_start_time = nil
+    self.needs_rate_limiting = false
     
     local sync_start_time = os.date("!%Y-%m-%dT%H:%M:%SZ")
     
