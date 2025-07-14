@@ -13,6 +13,7 @@
 -- - Handles incremental sync with cleanup of archived content
 -- - Fixed author metadata handling for proper highlight export
 -- - Enhanced URL corruption detection and repair for all image sources
+-- - Simple adaptive rate limiting to prevent API errors
 -- ===============================================================================
 
 local BD = require("ui/bidi")
@@ -91,11 +92,72 @@ function ReadwiseReader:init()
     
     -- Initialize author metadata storage
     self.document_authors = settings.document_authors or {}
+    
+    -- Initialize image download settings
+    self.download_images = settings.download_images == nil and true or settings.download_images
+    self.max_image_size_mb = settings.max_image_size_mb or 10
+
+    -- Simple rate limiting state
+    self.api_call_count = 0
+    self.sync_start_time = nil
+    self.needs_rate_limiting = false
 
     -- Initialize highlights parser
     self.parser = MyClipping:new{}
     
     self.ui.menu:registerToMainMenu(self)
+end
+
+-- ===============================================================================
+-- SIMPLE ADAPTIVE RATE LIMITING
+-- ===============================================================================
+
+function ReadwiseReader:checkRateLimit()
+    -- Only start counting after we make some API calls
+    if self.api_call_count == 0 then
+        self.sync_start_time = os.time()
+        self.api_call_count = 1
+        return
+    end
+    
+    self.api_call_count = self.api_call_count + 1
+    
+    -- After 5 API calls, check if we need rate limiting
+    if self.api_call_count == 5 and not self.needs_rate_limiting then
+        local elapsed = os.time() - self.sync_start_time
+        if elapsed < 20 then -- 5 calls in under 20 seconds suggests large library
+            self.needs_rate_limiting = true
+            logger.dbg("ReadwiseReader: enabling rate limiting after", self.api_call_count, "calls in", elapsed, "seconds")
+        end
+    end
+    
+    -- Apply rate limiting if needed
+    if self.needs_rate_limiting and self.api_call_count > 3 then
+        -- Reader API limit is 20/minute, so wait 3 seconds between calls to be safe
+        logger.dbg("ReadwiseReader: applying 3 second rate limit delay")
+        socket.sleep(3)
+    end
+end
+
+function ReadwiseReader:handleRetryAfter(code, headers)
+    -- Handle 429 rate limit responses
+    if code == 429 then
+        local retry_after = 60 -- Default to 60 seconds
+        if headers and headers["retry-after"] then
+            retry_after = tonumber(headers["retry-after"]) or 60
+        end
+        
+        -- Enable rate limiting for future calls
+        self.needs_rate_limiting = true
+        
+        logger.warn("ReadwiseReader: hit rate limit, waiting", retry_after, "seconds")
+        self:showProgress(string.format("Rate limited, waiting %d seconds…", retry_after))
+        socket.sleep(retry_after)
+        self:hideProgress()
+        
+        return true -- Indicate we should retry
+    end
+    return false
 end
 
 -- ===============================================================================
@@ -377,6 +439,28 @@ function ReadwiseReader:addToMainMenu(menu_items)
                             self.export_highlights_at_sync = not self.export_highlights_at_sync
                             self:saveSettings()
                         end,
+                    },
+                    {
+                        text = "Image Download",
+                        sub_item_table = {
+                            {
+                                text = "Download images",
+                                checked_func = function() 
+                                    return self.download_images 
+                                end,
+                                callback = function()
+                                    self.download_images = not self.download_images
+                                    self:saveSettings()
+                                end,
+                            },
+                            {
+                                text = "Maximum file size MB",
+                                keep_menu_open = true,
+                                callback = function()
+                                    self:showImageSizeDialog()
+                                end,
+                            },
+                        }
                     },
                     {
                         text = "Exclude from sync",
@@ -894,6 +978,26 @@ function ReadwiseReader:setDownloadDirectory(touchmenu_instance)
     }:chooseDir()
 end
 
+function ReadwiseReader:showImageSizeDialog()
+    local SpinWidget = require("ui/widget/spinwidget")
+    local UIManager = require("ui/uimanager")
+    
+    local spin = SpinWidget:new{
+        value = self.max_image_size_mb,
+        value_min = 1,
+        value_max = 50,
+        value_step = 1,
+        value_hold_step = 5,
+        title_text = "Maximum Image Size (MB)",
+        ok_text = _("Save"),
+        callback = function(spin_widget)
+            self.max_image_size_mb = spin_widget.value
+            self:saveSettings()
+        end,
+    }
+    UIManager:show(spin)
+end
+
 function ReadwiseReader:callAPI(method, endpoint, body, quiet)
     quiet = quiet or false
     local headers = {
@@ -917,6 +1021,9 @@ function ReadwiseReader:callAPI(method, endpoint, body, quiet)
     
     logger.dbg("ReadwiseReader:callAPI:", method, endpoint)
     
+    -- Apply rate limiting before making the call
+    self:checkRateLimit()
+    
     socketutil:set_timeout(10, 60)
     local code, resp_headers, status = socket.skip(1, http.request(request))
     socketutil:reset_timeout()
@@ -927,6 +1034,15 @@ function ReadwiseReader:callAPI(method, endpoint, body, quiet)
             UIManager:show(InfoMessage:new{ text = "Network error connecting to Readwise Reader." })
         end
         return nil, "network_error"
+    end
+    
+    -- Handle rate limiting with retry
+    if self:handleRetryAfter(code, resp_headers) then
+        -- Retry the request once after rate limit delay
+        logger.dbg("ReadwiseReader:callAPI: retrying after rate limit")
+        socketutil:set_timeout(10, 60)
+        code, resp_headers, status = socket.skip(1, http.request(request))
+        socketutil:reset_timeout()
     end
     
     if code == 200 or code == 204 then
@@ -960,38 +1076,51 @@ function ReadwiseReader:getDocumentList()
     local locations = {"new", "later", "shortlist"}
     
     for _, location in ipairs(locations) do
-        logger.dbg("ReadwiseReader:getDocumentList: fetching documents from location:", location)
-        next_cursor = nil
+        -- Check if this location is excluded before fetching
+        local skip_location = false
+        for _, excluded_location in ipairs(self.excluded_locations) do
+            if excluded_location == location then
+                skip_location = true
+                break
+            end
+        end
         
-        repeat
-            local endpoint = "/list/?location=" .. location .. "&withHtmlContent=true&withTags=true"
-            if next_cursor and type(next_cursor) == "string" and next_cursor ~= "" then
-                endpoint = endpoint .. "&pageCursor=" .. next_cursor
-            end
+        if skip_location then
+            logger.dbg("ReadwiseReader:getDocumentList: skipping excluded location:", location)
+        else
+            logger.dbg("ReadwiseReader:getDocumentList: fetching documents from location:", location)
+            next_cursor = nil
             
-            local result, err = self:callAPI("GET", endpoint)
-            
-            if not result then
-                logger.err("ReadwiseReader:getDocumentList: error getting document list for location", location, ":", err)
-                return nil
-            end
-            
-            if result.results then
-                for _, doc in ipairs(result.results) do
-                    if doc.reading_progress < 1 then
-                        table.insert(documents, doc)
+            repeat
+                local endpoint = "/list/?location=" .. location .. "&withHtmlContent=true&withTags=true"
+                if next_cursor and type(next_cursor) == "string" and next_cursor ~= "" then
+                    endpoint = endpoint .. "&pageCursor=" .. next_cursor
+                end
+                
+                local result, err = self:callAPI("GET", endpoint)
+                
+                if not result then
+                    logger.err("ReadwiseReader:getDocumentList: error getting document list for location", location, ":", err)
+                    return nil
+                end
+                
+                if result.results then
+                    for _, doc in ipairs(result.results) do
+                        if doc.reading_progress < 1 then
+                            table.insert(documents, doc)
+                        end
                     end
                 end
-            end
-            
-            if result.nextPageCursor and type(result.nextPageCursor) == "string" and result.nextPageCursor ~= "" then
-                next_cursor = result.nextPageCursor
-            else
-                next_cursor = nil
-            end
-            
-            logger.dbg("ReadwiseReader:getDocumentList: processed page for location", location, ", next_cursor:", next_cursor)
-        until not next_cursor
+                
+                if result.nextPageCursor and type(result.nextPageCursor) == "string" and result.nextPageCursor ~= "" then
+                    next_cursor = result.nextPageCursor
+                else
+                    next_cursor = nil
+                end
+                
+                logger.dbg("ReadwiseReader:getDocumentList: processed page for location", location, ", next_cursor:", next_cursor)
+            until not next_cursor
+        end
     end
     
     logger.dbg("ReadwiseReader:getDocumentList: total documents retrieved:", #documents)
@@ -1165,6 +1294,11 @@ function ReadwiseReader:processHtmlContent(content, document)
     -- Enhanced image processing - extract larger images from responsive picture elements
     decoded_content = self:extractLargerImages(decoded_content)
     
+    -- Initialize cumulative size tracking for this article
+    local total_article_size = #decoded_content  -- Start with text size
+    local max_article_size = self.max_image_size_mb * 1024 * 1024
+    local images_stopped = false
+    
     local html = string.format([[
 <!DOCTYPE html>
 <html>
@@ -1219,49 +1353,78 @@ function ReadwiseReader:processHtmlContent(content, document)
     document.author or "Unknown author",
     decoded_content)
     
-    -- Enhanced image processing with general URL corruption fix
+    -- Enhanced image processing with general URL corruption fix and size tracking
     local processed_html = html:gsub('(<img[^>]+src=")([^"]+)(")', function(prefix, url, suffix)
         if url:match("^data:") then
             return prefix .. url .. suffix
-        elseif url:match("^https?://") then
+        elseif url:match("^https?://") and not images_stopped then
             local clean_url = self:fixCorruptedUrl(url)
-            local encoded = self:fetchAndEncodeImage(clean_url)
+            local encoded, image_size = self:fetchAndEncodeImageWithSize(clean_url, max_article_size, total_article_size)
             if encoded then
+                total_article_size = total_article_size + (image_size or 0)
+                if total_article_size >= max_article_size then
+                    images_stopped = true
+                    logger.dbg("ReadwiseReader:processHtmlContent: reached size limit, stopping further image downloads")
+                end
                 return prefix .. encoded .. suffix
             else
                 local alt_text = html:match('alt="([^"]*)"') or "Image"
                 return string.format('<div class="image-placeholder">📷 Image: %s<br><small>Source: %s</small></div>', alt_text, clean_url)
             end
+        elseif images_stopped then
+            -- Size limit reached, use placeholder
+            local alt_text = html:match('alt="([^"]*)"') or "Image"
+            local clean_url = url:match("^https?://") and self:fixCorruptedUrl(url) or url
+            return string.format('<div class="image-placeholder">📷 Image: %s<br><small>Source: %s<br>⚠️ Size limit reached</small></div>', alt_text, clean_url)
         end
         return prefix .. url .. suffix
     end)
     
     -- Also process images in href attributes (which often contain higher resolution versions)
     processed_html = processed_html:gsub('(<a[^>]+href=")([^"]+)("[^>]*><img[^>]+src=")([^"]+)(")', function(link_prefix, href_url, middle, img_url, img_suffix)
-        if href_url:match("^https?://") then
+        if href_url:match("^https?://") and not images_stopped then
             -- Try the href URL first (often higher quality)
             local clean_href_url = self:fixCorruptedUrl(href_url)
-            local encoded = self:fetchAndEncodeImage(clean_href_url)
+            local encoded, image_size = self:fetchAndEncodeImageWithSize(clean_href_url, max_article_size, total_article_size)
             if encoded then
+                total_article_size = total_article_size + (image_size or 0)
+                if total_article_size >= max_article_size then
+                    images_stopped = true
+                    logger.dbg("ReadwiseReader:processHtmlContent: reached size limit, stopping further image downloads")
+                end
                 -- Replace both the href and src with the encoded image
                 return link_prefix .. "#" .. middle .. encoded .. img_suffix
             else
                 -- Fall back to trying the img src
                 local clean_img_url = self:fixCorruptedUrl(img_url)
-                local img_encoded = self:fetchAndEncodeImage(clean_img_url)
+                local img_encoded, img_size = self:fetchAndEncodeImageWithSize(clean_img_url, max_article_size, total_article_size)
                 if img_encoded then
+                    total_article_size = total_article_size + (img_size or 0)
+                    if total_article_size >= max_article_size then
+                        images_stopped = true
+                        logger.dbg("ReadwiseReader:processHtmlContent: reached size limit, stopping further image downloads")
+                    end
                     return link_prefix .. "#" .. middle .. img_encoded .. img_suffix
                 else
                     local alt_text = middle:match('alt="([^"]*)"') or "Image"
                     return string.format('<div class="image-placeholder">📷 Image: %s<br><small>Source: %s</small></div>', alt_text, clean_href_url)
                 end
             end
+        elseif images_stopped then
+            local alt_text = middle:match('alt="([^"]*)"') or "Image"
+            local clean_href_url = href_url:match("^https?://") and self:fixCorruptedUrl(href_url) or href_url
+            return string.format('<div class="image-placeholder">📷 Image: %s<br><small>Source: %s<br>⚠️ Size limit reached</small></div>', alt_text, clean_href_url)
         end
         -- For non-HTTP URLs, process img src normally
-        if img_url:match("^https?://") then
+        if img_url:match("^https?://") and not images_stopped then
             local clean_img_url = self:fixCorruptedUrl(img_url)
-            local encoded = self:fetchAndEncodeImage(clean_img_url)
+            local encoded, image_size = self:fetchAndEncodeImageWithSize(clean_img_url, max_article_size, total_article_size)
             if encoded then
+                total_article_size = total_article_size + (image_size or 0)
+                if total_article_size >= max_article_size then
+                    images_stopped = true
+                    logger.dbg("ReadwiseReader:processHtmlContent: reached size limit, stopping further image downloads")
+                end
                 return link_prefix .. href_url .. middle .. encoded .. img_suffix
             end
         end
@@ -1440,14 +1603,20 @@ function ReadwiseReader:extractLargerImages(content)
     return processed
 end
 
--- Enhanced image fetching with size limits
-function ReadwiseReader:fetchAndEncodeImage(url)
-    logger.dbg("ReadwiseReader:fetchAndEncodeImage: attempting to fetch", url)
+-- Enhanced image fetching with size limits and cumulative size tracking
+function ReadwiseReader:fetchAndEncodeImageWithSize(url, max_article_size, current_article_size)
+    logger.dbg("ReadwiseReader:fetchAndEncodeImageWithSize: attempting to fetch", url)
+    
+    -- Check if image downloading is disabled
+    if not self.download_images then
+        logger.dbg("ReadwiseReader:fetchAndEncodeImageWithSize: image downloading disabled, skipping", url)
+        return nil, 0
+    end
     
     -- Handle data: URLs - they're already encoded, just return them as-is
     if url:match("^data:") then
-        logger.dbg("ReadwiseReader:fetchAndEncodeImage: data URL detected, returning as-is")
-        return url
+        logger.dbg("ReadwiseReader:fetchAndEncodeImageWithSize: data URL detected, returning as-is")
+        return url, 0  -- Don't count data URLs against the size limit
     end
     
     local response = {}
@@ -1466,32 +1635,38 @@ function ReadwiseReader:fetchAndEncodeImage(url)
     local code, headers = socket.skip(1, http.request(request))
     socketutil:reset_timeout()
     
-    logger.dbg("ReadwiseReader:fetchAndEncodeImage: response code", code, "for URL", url)
+    logger.dbg("ReadwiseReader:fetchAndEncodeImageWithSize: response code", code, "for URL", url)
     
     if code ~= 200 then
-        logger.warn("ReadwiseReader:fetchAndEncodeImage: failed to fetch", url, "code:", code)
-        return nil
+        logger.warn("ReadwiseReader:fetchAndEncodeImageWithSize: failed to fetch", url, "code:", code)
+        return nil, 0
     end
     
     local image_data = table.concat(response)
     if #image_data == 0 then
-        logger.warn("ReadwiseReader:fetchAndEncodeImage: empty response for", url)
-        return nil
+        logger.warn("ReadwiseReader:fetchAndEncodeImageWithSize: empty response for", url)
+        return nil, 0
     end
     
-    -- Size limit: 1.5MB for better performance
-    local max_size = 1.5 * 1024 * 1024
-    if #image_data > max_size then
-        logger.warn("ReadwiseReader:fetchAndEncodeImage: image too large", #image_data, "bytes, skipping", url)
-        return nil
+    -- Check if adding this image would exceed the article size limit
+    local encoded_size = math.ceil(#image_data * 1.37)  -- Base64 adds ~37% overhead
+    if current_article_size + encoded_size > max_article_size then
+        logger.warn("ReadwiseReader:fetchAndEncodeImageWithSize: adding image would exceed article size limit, skipping", url)
+        return nil, 0
     end
     
     local encoded = mime.b64(image_data)
     local mime_type = headers and headers["content-type"] or "image/jpeg"
     
-    logger.dbg("ReadwiseReader:fetchAndEncodeImage: successfully encoded image", #image_data, "bytes, mime type:", mime_type)
+    logger.dbg("ReadwiseReader:fetchAndEncodeImageWithSize: successfully encoded image", #image_data, "bytes, mime type:", mime_type)
     
-    return string.format("data:%s;base64,%s", mime_type, encoded)
+    return string.format("data:%s;base64,%s", mime_type, encoded), encoded_size
+end
+
+-- Legacy function for compatibility - now calls the new function
+function ReadwiseReader:fetchAndEncodeImage(url)
+    local encoded, _ = self:fetchAndEncodeImageWithSize(url, math.huge, 0)
+    return encoded
 end
 
 function ReadwiseReader:showProgress(text)
@@ -1589,6 +1764,11 @@ function ReadwiseReader:synchronize()
     end
     
     UIManager:close(info)
+    
+    -- Reset rate limiting for new sync session
+    self.api_call_count = 0
+    self.sync_start_time = nil
+    self.needs_rate_limiting = false
     
     local sync_start_time = os.date("!%Y-%m-%dT%H:%M:%SZ")
     
@@ -1741,6 +1921,8 @@ function ReadwiseReader:saveSettings()
         excluded_locations = self.excluded_locations,
         document_locations = self.document_locations,
         document_authors = self.document_authors,
+        download_images = self.download_images,
+        max_image_size_mb = self.max_image_size_mb,
     }
     self.readwise_settings:saveSetting("readwisereader", settings)
     self.readwise_settings:flush()
