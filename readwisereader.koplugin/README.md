@@ -12,6 +12,7 @@ A simple plugin for KOReader integration with the highlight saving and read late
 
 ## Limitations and Known Issues:
 - Unfortunately two way highlight syncing is not possible as the Readwise Reader API does not provide the location data required by KOReader.
+- I am not planning to add any options to style the documents. However there are lots of tweaks you can apply as a user - see [here](https://koreader.rocks/user_guide/#L1-customizingappearance). 
 
 ## Installation:
 - Download the ZIP file of the plugin [here](https://github.com/tomtom800/readwisereader/archive/refs/heads/main.zip). Extract it.
