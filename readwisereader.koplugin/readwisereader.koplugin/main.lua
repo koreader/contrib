@@ -1310,7 +1310,6 @@ function ReadwiseReader:processHtmlContent(content, document)
             font-family: Georgia, serif; 
             line-height: 1.6; 
             margin: 20px; 
-            max-width: 800px;
         }
         img { 
             max-width: 100%%; 
