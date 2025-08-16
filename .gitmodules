@@ -38,3 +38,6 @@
 	path = review.koplugin
 	url = git@framagit.org:Brumaire/koreader-review-annotations-plugins.git
 	branch = koreader-contrib-submodule
+[submodule "karmtka.koplugin"]
+	path = karmtka.koplugin
+	url = https://github.com/cyanjnpr/karmtka.koplugin
