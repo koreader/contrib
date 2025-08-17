@@ -41,3 +41,6 @@
 [submodule "karmtka.koplugin"]
 	path = karmtka.koplugin
 	url = https://github.com/cyanjnpr/karmtka.koplugin
+[submodule "airplanemode.koplugin"]
+	path = airplanemode.koplugin
+	url = git@github.com:kodermike/airplanemode.koplugin.git
