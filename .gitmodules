@@ -38,9 +38,9 @@
 	path = review.koplugin
 	url = git@framagit.org:Brumaire/koreader-review-annotations-plugins.git
 	branch = koreader-contrib-submodule
-[submodule "karmtka.koplugin"]
-	path = karmtka.koplugin
-	url = https://github.com/cyanjnpr/karmtka.koplugin
 [submodule "airplanemode.koplugin"]
 	path = airplanemode.koplugin
 	url = git@github.com:kodermike/airplanemode.koplugin.git
+[submodule "copytoxochitl.koplugin"]
+	path = copytoxochitl.koplugin
+	url = https://github.com/cyanjnpr/copytoxochitl.koplugin
