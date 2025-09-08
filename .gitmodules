@@ -44,3 +44,6 @@
 [submodule "copytoxochitl.koplugin"]
 	path = copytoxochitl.koplugin
 	url = https://github.com/cyanjnpr/copytoxochitl.koplugin
+[submodule "AnnotationSync.koplugin"]
+	path = AnnotationSync.koplugin
+	url = https://github.com/dani84bs/AnnotationSync.koplugin
