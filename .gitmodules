@@ -50,6 +50,9 @@
 [submodule "assistant.koplugin"]
 	path = assistant.koplugin
 	url = https://github.com/omer-faruq/assistant.koplugin
+[submodule "comicreader.koplugin"]
+	path = comicreader.koplugin
+	url = https://github.com/OGKevin/comicreader.koplugin.git  
 [submodule "comicmeta.koplugin"]
 	path = comicmeta.koplugin
 	url = https://github.com/NightQuest/comicmeta.koplugin
