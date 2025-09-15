@@ -56,3 +56,6 @@
 [submodule "comicmeta.koplugin"]
 	path = comicmeta.koplugin
 	url = https://github.com/NightQuest/comicmeta.koplugin
+[submodule "wordreference.koplugin"]
+	path = wordreference.koplugin
+	url = https://kristianpennacchia@github.com/kristianpennacchia/wordreference.koplugin
