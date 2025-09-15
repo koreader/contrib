@@ -56,3 +56,6 @@
 [submodule "comicmeta.koplugin"]
 	path = comicmeta.koplugin
 	url = https://github.com/NightQuest/comicmeta.koplugin
+[submodule "zzz-readermenuredesign.koplugin"]
+	path = zzz-readermenuredesign.koplugin
+	url = https://github.com/kristianpennacchia/zzz-readermenuredesign.koplugin
