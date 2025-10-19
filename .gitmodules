@@ -47,6 +47,7 @@
 [submodule "AnnotationSync.koplugin"]
 	path = AnnotationSync.koplugin
 	url = https://github.com/dani84bs/AnnotationSync.koplugin
+	branch = main
 [submodule "assistant.koplugin"]
 	path = assistant.koplugin
 	url = https://github.com/omer-faruq/assistant.koplugin
