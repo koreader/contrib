@@ -63,3 +63,9 @@
 [submodule "zzz-readermenuredesign.koplugin"]
 	path = zzz-readermenuredesign.koplugin
 	url = https://github.com/kristianpennacchia/zzz-readermenuredesign.koplugin
+[submodule "webbrowser.koplugin"]
+	path = webbrowser.koplugin
+	url = https://github.com/omer-faruq/webbrowser.koplugin
+[submodule "filebrowserplus.koplugin"]
+	path = filebrowserplus.koplugin
+	url = https://github.com/patelneeraj/filebrowserplus.koplugin
