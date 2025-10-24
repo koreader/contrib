@@ -69,3 +69,6 @@
 [submodule "filebrowserplus.koplugin"]
 	path = filebrowserplus.koplugin
 	url = https://github.com/patelneeraj/filebrowserplus.koplugin
+[submodule "rssreader.koplugin"]
+	path = rssreader.koplugin
+	url = https://github.com/omer-faruq/rssreader.koplugin
