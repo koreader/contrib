@@ -72,3 +72,7 @@
 [submodule "rssreader.koplugin"]
 	path = rssreader.koplugin
 	url = https://github.com/omer-faruq/rssreader.koplugin
+[submodule "screenlockpin.koplugin"]
+	path = screenlockpin.koplugin
+	url = https://github.com/oleasteo/koreader-screenlockpin.git
+	branch = koreader-contrib
