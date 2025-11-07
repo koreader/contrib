@@ -76,3 +76,6 @@
 	path = screenlockpin.koplugin
 	url = https://github.com/oleasteo/koreader-screenlockpin.git
 	branch = koreader-contrib
+[submodule "memobook.koplugin"]
+	path = memobook.koplugin
+	url = https://github.com/omer-faruq/memobook.koplugin
