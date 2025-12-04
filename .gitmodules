@@ -79,3 +79,6 @@
 [submodule "memobook.koplugin"]
 	path = memobook.koplugin
 	url = https://github.com/omer-faruq/memobook.koplugin
+[submodule "stopwatchtimer.koplugin"]
+	path = stopwatchtimer.koplugin
+	url = https://github.com/markleenders/stopwatchtimer.koplugin
