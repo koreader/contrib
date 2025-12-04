@@ -7,6 +7,7 @@ A simple plugin for KOReader integration with the highlight saving and read late
 - Articles which have been read in KOReader and marked as “finished” will be moved to the Readwise Reader Archive at the next sync, and deleted from KOReader.
 - At sync, articles which have been archived in Readwise Reader will be deleted from KOReader.
 - Particular types of article, locations and document tags can be excluded from syncing in the settings menu.
+- The number of articles downloaded per sync can be limited in the settings menu (default: unlimited).
 - Highlights and notes that are saved in KOReader are exported to Readwise in the same sync process (disabled by default - enable in the settings menu). 
 - Very image heavy files will download, but may cause KOReader to crash if the file is very large. Due to the way images are saved and the limitations of HTML files, this is more of an issue than with EPUBs. To mitigate this, there is a setting to allow the user to cap the size of a file, after which further images are not downloaded. This is set to 10MB by default, but may be changed according to the limits of the user’s setup. There is also a toggle to turn off image downloads completely if required.
 
@@ -25,7 +26,7 @@ A simple plugin for KOReader integration with the highlight saving and read late
 -- ./settings/readwisereader.lua
 return {
     ["readwisereader"] = {
-        ["access_token"] = "{access token}"
+        ["access_token"] = "{access token}",
         ["available_locations"] = {},
         ["available_tags"] = {},
         ["directory"] = "{download location}",
@@ -34,6 +35,7 @@ return {
         ["document_tags"] = {},
         ["excluded_locations"] = {},
         ["excluded_tags"] = {},
+        ["max_articles_to_download"] = 0,  -- 0 = unlimited
     },
 }
 ```
