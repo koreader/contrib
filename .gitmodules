@@ -82,3 +82,6 @@
 [submodule "stopwatchtimer.koplugin"]
 	path = stopwatchtimer.koplugin
 	url = https://github.com/markleenders/stopwatchtimer.koplugin
+[submodule "clock.koplugin"]
+	path = clock.koplugin
+	url = https://github.com/jperon/clock.koplugin/
