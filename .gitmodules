@@ -97,3 +97,6 @@
 [submodule "nonogram.koplugin"]
 	path = nonogram.koplugin
 	url = https://github.com/omer-faruq/nonogram.koplugin
+[submodule "ankiviewer.koplugin"]
+	path = ankiviewer.koplugin
+	url = https://github.com/omer-faruq/ankiviewer.koplugin
