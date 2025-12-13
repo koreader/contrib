@@ -88,3 +88,6 @@
 [submodule "sudoku.koplugin"]
 	path = sudoku.koplugin
 	url = https://github.com/omer-faruq/sudoku.koplugin
+[submodule "wordsearch.koplugin"]
+	path = wordsearch.koplugin
+	url = https://github.com/omer-faruq/wordsearch.koplugin
