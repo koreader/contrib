@@ -94,3 +94,6 @@
 [submodule "tbrplanner.koplugin"]
 	path = tbrplanner.koplugin
 	url = https://github.com/omer-faruq/tbrplanner.koplugin
+[submodule "nonogram.koplugin"]
+	path = nonogram.koplugin
+	url = https://github.com/omer-faruq/nonogram.koplugin
