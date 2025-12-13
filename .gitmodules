@@ -100,3 +100,6 @@
 [submodule "ankiviewer.koplugin"]
 	path = ankiviewer.koplugin
 	url = https://github.com/omer-faruq/ankiviewer.koplugin
+[submodule "appstore.koplugin"]
+	path = appstore.koplugin
+	url = https://github.com/omer-faruq/appstore.koplugin
