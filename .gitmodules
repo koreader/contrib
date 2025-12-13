@@ -91,3 +91,6 @@
 [submodule "wordsearch.koplugin"]
 	path = wordsearch.koplugin
 	url = https://github.com/omer-faruq/wordsearch.koplugin
+[submodule "tbrplanner.koplugin"]
+	path = tbrplanner.koplugin
+	url = https://github.com/omer-faruq/tbrplanner.koplugin
