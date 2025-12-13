@@ -85,3 +85,6 @@
 [submodule "clock.koplugin"]
 	path = clock.koplugin
 	url = https://github.com/jperon/clock.koplugin/
+[submodule "sudoku.koplugin"]
+	path = sudoku.koplugin
+	url = https://github.com/omer-faruq/sudoku.koplugin
