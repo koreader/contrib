@@ -109,3 +109,6 @@
 [submodule "koassistant.koplugin"]
 	path = koassistant.koplugin
 	url = https://github.com/zeeyado/koassistant.koplugin.git
+[submodule "localsend.koplugin"]
+	path = localsend.koplugin
+	url = https://github.com/kaikozlov/localsend.koplugin.git
