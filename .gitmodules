@@ -106,3 +106,6 @@
 [submodule "readingstreak.koplugin"]
 	path = readingstreak.koplugin
 	url = https://github.com/advokatb/readingstreak.koplugin.git
+[submodule "koassistant.koplugin"]
+	path = koassistant.koplugin
+	url = https://github.com/zeeyado/koassistant.koplugin.git
