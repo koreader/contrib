@@ -33,7 +33,7 @@
 	url = https://github.com/syakhisk/readingruler.koplugin
 [submodule "kochess.koplugin"]
 	path = kochess.koplugin
-	url = https://github.com/coffman/koreaderchess.git
+	url = https://github.com/coffman/kochess.koplugin.git
 [submodule "review.koplugin"]
 	path = review.koplugin
 	url = git@framagit.org:Brumaire/koreader-review-annotations-plugins.git
