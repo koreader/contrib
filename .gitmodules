@@ -112,3 +112,6 @@
 [submodule "localsend.koplugin"]
 	path = localsend.koplugin
 	url = https://github.com/kaikozlov/localsend.koplugin.git
+[submodule "sleeplogger.koplugin"]
+	path = sleeplogger.koplugin
+	url = https://github.com/theiltho/koreader-sleeplogger.git
