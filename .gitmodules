@@ -33,7 +33,7 @@
 	url = https://github.com/syakhisk/readingruler.koplugin
 [submodule "kochess.koplugin"]
 	path = kochess.koplugin
-	url = https://github.com/bateast/kochess
+	url = https://github.com/coffman/kochess.koplugin.git
 [submodule "review.koplugin"]
 	path = review.koplugin
 	url = git@framagit.org:Brumaire/koreader-review-annotations-plugins.git
@@ -82,3 +82,39 @@
 [submodule "stopwatchtimer.koplugin"]
 	path = stopwatchtimer.koplugin
 	url = https://github.com/markleenders/stopwatchtimer.koplugin
+[submodule "clock.koplugin"]
+	path = clock.koplugin
+	url = https://github.com/jperon/clock.koplugin/
+[submodule "sudoku.koplugin"]
+	path = sudoku.koplugin
+	url = https://github.com/omer-faruq/sudoku.koplugin
+[submodule "wordsearch.koplugin"]
+	path = wordsearch.koplugin
+	url = https://github.com/omer-faruq/wordsearch.koplugin
+[submodule "tbrplanner.koplugin"]
+	path = tbrplanner.koplugin
+	url = https://github.com/omer-faruq/tbrplanner.koplugin
+[submodule "nonogram.koplugin"]
+	path = nonogram.koplugin
+	url = https://github.com/omer-faruq/nonogram.koplugin
+[submodule "ankiviewer.koplugin"]
+	path = ankiviewer.koplugin
+	url = https://github.com/omer-faruq/ankiviewer.koplugin
+[submodule "appstore.koplugin"]
+	path = appstore.koplugin
+	url = https://github.com/omer-faruq/appstore.koplugin
+[submodule "readingstreak.koplugin"]
+	path = readingstreak.koplugin
+	url = https://github.com/advokatb/readingstreak.koplugin.git
+[submodule "koassistant.koplugin"]
+	path = koassistant.koplugin
+	url = https://github.com/zeeyado/koassistant.koplugin.git
+[submodule "localsend.koplugin"]
+	path = localsend.koplugin
+	url = https://github.com/kaikozlov/localsend.koplugin.git
+[submodule "sleeplogger.koplugin"]
+	path = sleeplogger.koplugin
+	url = https://github.com/theiltho/koreader-sleeplogger.git
+[submodule "homeassistant.koplugin"]
+	path = homeassistant.koplugin
+	url = https://github.com/moritz-john/homeassistant.koplugin.git
