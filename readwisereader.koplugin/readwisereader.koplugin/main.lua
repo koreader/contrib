@@ -3,17 +3,20 @@
 -- ===============================================================================
 -- This plugin synchronizes articles from Readwise Reader to KOReader and
 -- exports highlights/notes back to Readwise
--- 
+--
 -- MAIN FEATURES:
 -- - Downloads articles from Readwise Reader "later" and "shortlist" locations
 -- - Converts articles to HTML format with embedded images
--- - Offers filtering by article tags, location and type
+-- - Generates KOReader metadata sidecars (.sdr) for enhanced library integration
+-- - Automatically manages KOReader collections based on article location
+-- - Offers filtering by article tags, location, type and site name (via series)
 -- - Archives finished articles back to Readwise
 -- - Exports highlights and notes to Readwise
 -- - Handles incremental sync with cleanup of archived content
 -- - Fixed author metadata handling for proper highlight export
 -- - Enhanced URL corruption detection and repair for all image sources
 -- - Simple adaptive rate limiting to prevent API errors
+-- - Configurable article download limit to control sync size
 -- ===============================================================================
 
 local BD = require("ui/bidi")
@@ -28,6 +31,11 @@ local InputDialog = require("ui/widget/inputdialog")
 local JSON = require("json")
 local LuaSettings = require("luasettings")
 local MultiConfirmBox = require("ui/widget/multiconfirmbox")
+local ok, ReadCollection = pcall(require, "readcollection")
+if not ok then
+    logger.warn("ReadwiseReader: ReadCollection module not available, collection management disabled")
+    ReadCollection = nil
+end
 local MyClipping = require("clip")
 local NetworkMgr = require("ui/network/manager")
 local ReadHistory = require("readhistory")
@@ -61,10 +69,10 @@ local ReadwiseReader = WidgetContainer:extend{
 }
 
 function ReadwiseReader:onDispatcherRegisterActions()
-    Dispatcher:registerAction("readwisereader_download", { 
-        category = "none", 
-        event = "SynchronizeReadwiseReader", 
-        title = "Readwise Reader sync", 
+    Dispatcher:registerAction("readwisereader_download", {
+        category = "none",
+        event = "SynchronizeReadwiseReader",
+        title = "Readwise Reader sync",
         general = true,
     })
 end
@@ -92,18 +100,32 @@ function ReadwiseReader:init()
     
     -- Initialize author metadata storage
     self.document_authors = settings.document_authors or {}
-    
+
+    -- Initialize source URL metadata storage (for highlight export)
+    self.document_source_urls = settings.document_source_urls or {}
+
     -- Initialize image download settings
     self.download_images = settings.download_images == nil and true or settings.download_images
     self.max_image_size_mb = settings.max_image_size_mb or 10
+
+    -- Initialize max articles download limit
+    self.max_articles_to_download = settings.max_articles_to_download or 0 -- 0 = unlimited
+
+    -- Initialize koreader tag filter (only sync articles tagged "koreader")
+    self.sync_only_koreader_tag = settings.sync_only_koreader_tag or false
 
     -- Simple rate limiting state
     self.api_call_count = 0
     self.sync_start_time = nil
     self.needs_rate_limiting = false
 
-    -- Initialize highlights parser
-    self.parser = MyClipping:new{ ui = self.ui }
+    -- Initialize highlights parser with a mock UI to satisfy new clip.lua requirements
+    local mock_ui = {
+        bookinfo = {
+            extendProps = function(props) return props or {} end
+        }
+    }
+    self.parser = MyClipping:new{ ui = mock_ui }
     
     self.ui.menu:registerToMainMenu(self)
 end
@@ -208,6 +230,209 @@ function ReadwiseReader:getDocumentAuthorFromFile(filepath)
 end
 
 -- ===============================================================================
+-- SOURCE URL METADATA STORAGE AND RETRIEVAL FUNCTIONS
+-- ===============================================================================
+
+function ReadwiseReader:storeSourceUrlMetadata(document_id, source_url)
+    if not self.document_source_urls then
+        self.document_source_urls = {}
+    end
+
+    if source_url and type(source_url) == "string" and source_url ~= "" then
+        self.document_source_urls[document_id] = source_url
+        logger.dbg("ReadwiseReader:storeSourceUrlMetadata: stored source_url for document", document_id)
+    else
+        self.document_source_urls[document_id] = nil
+    end
+
+    self:saveSettings()
+end
+
+function ReadwiseReader:getStoredSourceUrl(document_id)
+    if self.document_source_urls and self.document_source_urls[document_id] then
+        return self.document_source_urls[document_id]
+    end
+    return nil
+end
+
+function ReadwiseReader:removeSourceUrlMetadata(document_id)
+    if self.document_source_urls and self.document_source_urls[document_id] then
+        self.document_source_urls[document_id] = nil
+        logger.dbg("ReadwiseReader:removeSourceUrlMetadata: removed source_url metadata for document", document_id)
+        self:saveSettings()
+    end
+end
+
+function ReadwiseReader:getDocumentSourceUrlFromFile(filepath)
+    local doc_id = self:getDocumentIdFromPath(filepath)
+    if doc_id then
+        return self:getStoredSourceUrl(doc_id)
+    end
+    return nil
+end
+
+-- ===============================================================================
+-- METADATA SIDECAR FILE MANAGEMENT
+-- ===============================================================================
+
+function ReadwiseReader:setDocumentMetadata(filepath, document)
+    local custom_doc_settings = DocSettings.openSettingsFile()
+    local props = {}
+
+    if document.title and document.title ~= "" then
+        props.title = document.title
+    end
+
+    if document.author and document.author ~= "" then
+        props.authors = document.author
+    end
+
+    if self.document_tags and self.document_tags[document.id] and #self.document_tags[document.id] > 0 then
+        props.keywords = table.concat(self.document_tags[document.id], "\n")
+        logger.dbg("ReadwiseReader:setDocumentMetadata: set keywords:", props.keywords)
+    end
+
+    if document.summary and document.summary ~= "" then
+        props.description = document.summary
+    end
+
+    if document.site_name and document.site_name ~= "" then
+        props.series = document.site_name
+    end
+
+    -- Both doc_props and custom_props need to exist, otherwise KOReader will crash
+    custom_doc_settings:saveSetting("doc_props", props)
+    custom_doc_settings:saveSetting("custom_props", props)
+
+    local success = custom_doc_settings:flushCustomMetadata(filepath)
+
+    if success then
+        -- Broadcast events to ensure metadata is reliably picked up
+        UIManager:broadcastEvent(Event:new("InvalidateMetadataCache", filepath))
+        UIManager:broadcastEvent(Event:new("BookMetadataChanged"))
+        logger.dbg("ReadwiseReader:setDocumentMetadata: wrote custom metadata for", filepath)
+    else
+        logger.warn("ReadwiseReader:setDocumentMetadata: failed to write custom metadata for", filepath)
+    end
+end
+
+-- ===============================================================================
+-- COLLECTION MANAGEMENT
+-- ===============================================================================
+
+function ReadwiseReader:initCollectionTracking()
+    self.modified_collections = {}
+end
+
+function ReadwiseReader:saveCollections()
+    if not ReadCollection then
+        return
+    end
+    if next(self.modified_collections) then
+        local count = 0
+        for _ in pairs(self.modified_collections) do count = count + 1 end
+        logger.dbg("ReadwiseReader:saveCollections: saving", count, "modified collections")
+        ReadCollection:write(self.modified_collections)
+        self.modified_collections = {}
+    end
+end
+
+function ReadwiseReader:getCollectionNameForLocation(location)
+    if not location or location == "" then
+        return nil
+    end
+
+    local location_display = location:sub(1,1):upper() .. location:sub(2)
+    return "Readwise: " .. location_display
+end
+
+function ReadwiseReader:ensureCollectionExists(location)
+    if not ReadCollection or not location then
+        return false
+    end
+
+    local collection_name = self:getCollectionNameForLocation(location)
+
+    if not ReadCollection.coll[collection_name] then
+        logger.dbg("ReadwiseReader:ensureCollectionExists: creating collection", collection_name)
+        ReadCollection:addCollection(collection_name)
+        return true
+    end
+
+    return false
+end
+
+function ReadwiseReader:removeFromAllCollections(filepath)
+    if not ReadCollection or not filepath then
+        return
+    end
+
+    local collections = ReadCollection:getCollectionsWithFile(filepath)
+    if collections and #collections > 0 then
+        for _, coll_name in ipairs(collections) do
+            if coll_name:match("^Readwise: ") then
+                logger.dbg("ReadwiseReader:removeFromAllCollections: removing", filepath, "from", coll_name)
+                ReadCollection:removeItem(filepath, coll_name, true)
+                self.modified_collections[coll_name] = true
+            end
+        end
+    end
+end
+
+function ReadwiseReader:updateDocumentCollections(filepath, document)
+    if not ReadCollection then
+        return false
+    end
+
+    if not filepath or not document then
+        logger.dbg("ReadwiseReader:updateDocumentCollections: missing filepath or document")
+        return false
+    end
+
+    local new_location = document.location
+
+    if not new_location then
+        logger.dbg("ReadwiseReader:updateDocumentCollections: no location for document", document.id)
+        return false
+    end
+
+    self:ensureCollectionExists(new_location)
+
+    local new_collection = self:getCollectionNameForLocation(new_location)
+
+    if not new_collection then
+        return false
+    end
+
+    local all_readwise_collections = {}
+    if self.available_locations then
+        for _, location in ipairs(self.available_locations) do
+            local coll_name = self:getCollectionNameForLocation(location)
+            if ReadCollection.coll[coll_name] and ReadCollection:isFileInCollection(filepath, coll_name) then
+                table.insert(all_readwise_collections, coll_name)
+            end
+        end
+    end
+
+    for _, old_collection in ipairs(all_readwise_collections) do
+        if old_collection ~= new_collection then
+            ReadCollection:removeItem(filepath, old_collection, true)
+            self.modified_collections[old_collection] = true
+        end
+    end
+
+    local is_in_collection = ReadCollection.coll[new_collection] and ReadCollection:isFileInCollection(filepath, new_collection)
+
+    if not is_in_collection then
+        ReadCollection:addItem(filepath, new_collection)
+        self.modified_collections[new_collection] = true
+        return true
+    end
+
+    return false
+end
+
+-- ===============================================================================
 -- HIGHLIGHTS EXPORT FUNCTIONALITY
 -- ===============================================================================
 
@@ -299,10 +524,12 @@ function ReadwiseReader:createHighlights(booknotes)
         ["Authorization"] = "Token " .. self.access_token,
     }
 
-    -- Try to get the correct author from stored metadata
+    -- Try to get the correct author and source_url from stored metadata
     local correct_author = nil
+    local source_url = nil
     if booknotes.file then
         correct_author = self:getDocumentAuthorFromFile(booknotes.file)
+        source_url = self:getDocumentSourceUrlFromFile(booknotes.file)
     end
     
     -- Fallback to booknotes.author if no stored metadata, but clean it up
@@ -319,6 +546,7 @@ function ReadwiseReader:createHighlights(booknotes)
                 text = clipping.text,
                 title = booknotes.title,
                 author = correct_author,
+                source_url = source_url,
                 source_type = "koreader",
                 category = "articles",  -- Changed from "books" to "articles"
                 note = clipping.note,
@@ -463,6 +691,29 @@ function ReadwiseReader:addToMainMenu(menu_items)
                         }
                     },
                     {
+                        text_func = function()
+                            if self.max_articles_to_download == 0 then
+                                return "Max articles per sync: Unlimited"
+                            else
+                                return string.format("Max articles per sync: %d", self.max_articles_to_download)
+                            end
+                        end,
+                        keep_menu_open = true,
+                        callback = function()
+                            self:showMaxArticlesDialog()
+                        end,
+                    },
+                    {
+                        text = "Only sync articles tagged 'koreader'",
+                        checked_func = function()
+                            return self.sync_only_koreader_tag
+                        end,
+                        callback = function()
+                            self.sync_only_koreader_tag = not self.sync_only_koreader_tag
+                            self:saveSettings()
+                        end,
+                    },
+                    {
                         text = "Exclude from sync",
                         sub_item_table_func = function()
                             return self:getExclusionMenuItems()
@@ -471,7 +722,7 @@ function ReadwiseReader:addToMainMenu(menu_items)
                 }
             },
             {
-                text = "Version 1.6",
+                text = "Version 2.4",
                 enabled = false,
             },
         },
@@ -631,22 +882,13 @@ end
 function ReadwiseReader:deleteArticlesWithLocation(location)
     local deleted_count = 0
     
-    for entry in lfs.dir(self.directory) do
-        if entry ~= "." and entry ~= ".." then
-            local filepath = self.directory .. entry
-            
-            if lfs.attributes(filepath, "mode") == "file" and entry:find(article_id_prefix, 1, true) then
-                local doc_id = self:getDocumentIdFromPath(filepath)
-                if doc_id then
-                    if self:documentHasLocation(doc_id, location) then
-                        logger.dbg("ReadwiseReader:deleteArticlesWithLocation: deleting", filepath, "with location", location)
-                        FileManager:deleteFile(filepath, true)
-                        deleted_count = deleted_count + 1
-                    end
-                end
-            end
+    self:forEachLocalDocument(function(doc_id, filepath)
+        if self:documentHasLocation(doc_id, location) then
+            logger.dbg("ReadwiseReader:deleteArticlesWithLocation: deleting", filepath, "with location", location)
+            FileManager:deleteFile(filepath, true)
+            deleted_count = deleted_count + 1
         end
-    end
+    end)
     
     if deleted_count > 0 then
         UIManager:show(InfoMessage:new{
@@ -699,22 +941,13 @@ end
 function ReadwiseReader:deleteArticlesWithTag(tag)
     local deleted_count = 0
     
-    for entry in lfs.dir(self.directory) do
-        if entry ~= "." and entry ~= ".." then
-            local filepath = self.directory .. entry
-            
-            if lfs.attributes(filepath, "mode") == "file" and entry:find(article_id_prefix, 1, true) then
-                local doc_id = self:getDocumentIdFromPath(filepath)
-                if doc_id then
-                    if self:documentHasTag(doc_id, tag) then
-                        logger.dbg("ReadwiseReader:deleteArticlesWithTag: deleting", filepath, "with tag", tag)
-                        FileManager:deleteFile(filepath, true)
-                        deleted_count = deleted_count + 1
-                    end
-                end
-            end
+    self:forEachLocalDocument(function(doc_id, filepath)
+        if self:documentHasTag(doc_id, tag) then
+            logger.dbg("ReadwiseReader:deleteArticlesWithTag: deleting", filepath, "with tag", tag)
+            FileManager:deleteFile(filepath, true)
+            deleted_count = deleted_count + 1
         end
-    end
+    end)
     
     if deleted_count > 0 then
         UIManager:show(InfoMessage:new{
@@ -1002,6 +1235,27 @@ function ReadwiseReader:showImageSizeDialog()
     UIManager:show(spin)
 end
 
+function ReadwiseReader:showMaxArticlesDialog()
+    local SpinWidget = require("ui/widget/spinwidget")
+    local UIManager = require("ui/uimanager")
+
+    local spin = SpinWidget:new{
+        value = self.max_articles_to_download,
+        value_min = 0,
+        value_max = 500,
+        value_step = 5,
+        value_hold_step = 25,
+        title_text = "Max Articles Per Sync",
+        info_text = "0 = unlimited\n\nDownloads first X articles from API.\nExisting local articles are skipped first.",
+        ok_text = _("Save"),
+        callback = function(spin_widget)
+            self.max_articles_to_download = spin_widget.value
+            self:saveSettings()
+        end,
+    }
+    UIManager:show(spin)
+end
+
 function ReadwiseReader:callAPI(method, endpoint, body, quiet)
     quiet = quiet or false
     local headers = {
@@ -1027,11 +1281,38 @@ function ReadwiseReader:callAPI(method, endpoint, body, quiet)
     
     -- Apply rate limiting before making the call
     self:checkRateLimit()
-    
-    socketutil:set_timeout(10, 60)
-    local code, resp_headers, status = socket.skip(1, http.request(request))
-    socketutil:reset_timeout()
-    
+
+    -- Retry logic for HTTPS/wantread errors (common on Kindle devices)
+    local max_retries = 3
+    local retry_delay = 2  -- seconds
+    local code, resp_headers, status
+
+    for attempt = 1, max_retries do
+        socketutil:set_timeout(10, 60)
+        code, resp_headers, status = socket.skip(1, http.request(request))
+        socketutil:reset_timeout()
+
+        -- If we got a response, break out of retry loop
+        if resp_headers ~= nil then
+            break
+        end
+
+        -- Check if it's a wantread error (HTTPS issue on Kindle)
+        local error_msg = tostring(status or code or "")
+        if error_msg:match("wantread") and attempt < max_retries then
+            logger.dbg("ReadwiseReader:callAPI: wantread error, retrying", attempt, "of", max_retries)
+            socket.sleep(retry_delay)
+            -- Recreate sink for retry
+            sink = {}
+            request.sink = ltn12.sink.table(sink)
+            if body then
+                request.source = ltn12.source.string(json_body)
+            end
+        else
+            break
+        end
+    end
+
     if resp_headers == nil then
         logger.err("ReadwiseReader:callAPI: network error", status or code)
         if not quiet then
@@ -1094,9 +1375,21 @@ function ReadwiseReader:getDocumentList()
         else
             logger.dbg("ReadwiseReader:getDocumentList: fetching documents from location:", location)
             next_cursor = nil
-            
+            local page_count = 0
+            local limit_reached = false
+
             repeat
+                page_count = page_count + 1
+
+                -- Update progress message with location and count
+                local location_display = location == "new" and "Inbox" or (location:sub(1,1):upper() .. location:sub(2))
+                self:showProgress(string.format("Getting %s articles (%d kept)…", location_display, #documents))
+
+                -- Fetch with HTML content and tags for batch processing
                 local endpoint = "/list/?location=" .. location .. "&withHtmlContent=true&withTags=true"
+                if self.sync_only_koreader_tag then
+                    endpoint = endpoint .. "&tag=koreader"
+                end
                 if next_cursor and type(next_cursor) == "string" and next_cursor ~= "" then
                     endpoint = endpoint .. "&pageCursor=" .. next_cursor
                 end
@@ -1111,7 +1404,17 @@ function ReadwiseReader:getDocumentList()
                 if result.results then
                     for _, doc in ipairs(result.results) do
                         if doc.reading_progress < 1 then
-                            table.insert(documents, doc)
+                            -- Apply tag/location filtering during collection
+                            if not self:shouldSkipDocument(doc) then
+                                table.insert(documents, doc)
+
+                                -- Check if limit reached
+                                if self.max_articles_to_download > 0 and
+                                   #documents >= self.max_articles_to_download then
+                                    limit_reached = true
+                                    break
+                                end
+                            end
                         end
                     end
                 end
@@ -1121,9 +1424,9 @@ function ReadwiseReader:getDocumentList()
                 else
                     next_cursor = nil
                 end
-                
-                logger.dbg("ReadwiseReader:getDocumentList: processed page for location", location, ", next_cursor:", next_cursor)
-            until not next_cursor
+
+                logger.dbg("ReadwiseReader:getDocumentList: processed page", page_count, "for location", location, ", next_cursor:", next_cursor)
+            until not next_cursor or limit_reached
         end
     end
     
@@ -1169,18 +1472,29 @@ function ReadwiseReader:getArchivedDocuments(since_date)
     return documents
 end
 
-function ReadwiseReader:findLocalDocumentByReadwiseId(readwise_id)
-    local filename_pattern = article_id_prefix .. readwise_id .. article_id_postfix
-    
+function ReadwiseReader:forEachLocalDocument(callback)
     for entry in lfs.dir(self.directory) do
-        if entry ~= "." and entry ~= ".." then
-            if entry:find(filename_pattern, 1, true) then
-                return self.directory .. entry
+        if entry:match("%.html$") then
+            local filepath = self.directory .. entry
+            if lfs.attributes(filepath, "mode") == "file" then
+                local doc_id = self:getDocumentIdFromPath(filepath)
+                if doc_id then
+                    local result = callback(doc_id, filepath)
+                    if result ~= nil then
+                        return result
+                    end
+                end
             end
         end
     end
-    
-    return nil
+end
+
+function ReadwiseReader:findLocalDocumentByReadwiseId(readwise_id)
+    return self:forEachLocalDocument(function(doc_id, filepath)
+        if doc_id == readwise_id then
+            return filepath
+        end
+    end)
 end
 
 function ReadwiseReader:cleanupArchivedDocuments()
@@ -1199,33 +1513,61 @@ function ReadwiseReader:cleanupArchivedDocuments()
     end
     
     local deleted_count = 0
-    
+
+    -- Initialize collection tracking if not already done
+    if not self.modified_collections then
+        self:initCollectionTracking()
+    end
+
     for _, doc in ipairs(archived_docs) do
         local local_filepath = self:findLocalDocumentByReadwiseId(doc.id)
-        
+
         if local_filepath then
             logger.dbg("ReadwiseReader:cleanupArchivedDocuments: deleting locally archived document", doc.id, local_filepath)
+            self:removeFromAllCollections(local_filepath)
+            -- Save collections immediately before deleting file to prevent orphaned references
+            self:saveCollections()
             FileManager:deleteFile(local_filepath, true)
-            -- Remove author metadata for archived documents
+            -- Remove metadata for archived documents
             self:removeAuthorMetadata(doc.id)
+            self:removeSourceUrlMetadata(doc.id)
             deleted_count = deleted_count + 1
         end
     end
-    
+
     logger.dbg("ReadwiseReader:cleanupArchivedDocuments: deleted", deleted_count, "locally archived documents")
     return deleted_count
 end
 
-function ReadwiseReader:documentExists(doc_id)
-    local filename_pattern = article_id_prefix .. doc_id .. article_id_postfix
-    
-    for entry in lfs.dir(self.directory) do
-        if entry:find(filename_pattern, 1, true) then
-            return true
-        end
+function ReadwiseReader:reconcileLocalDocuments(server_documents)
+    -- Remove local articles that no longer exist on server or no longer match filters
+    self:showProgress("Checking for removed articles…")
+
+    -- Build a set of document IDs that should exist locally
+    local server_ids = {}
+    for _, doc in ipairs(server_documents) do
+        server_ids[doc.id] = true
     end
-    
-    return false
+
+    local removed_count = 0
+
+    -- Scan local directory for Readwise articles
+    self:forEachLocalDocument(function(doc_id, filepath)
+        if not server_ids[doc_id] then
+            logger.dbg("ReadwiseReader:reconcileLocalDocuments: removing", filepath, "- no longer matches server state")
+            FileManager:deleteFile(filepath, true)
+            self:removeAuthorMetadata(doc_id)
+            self:removeSourceUrlMetadata(doc_id)
+            removed_count = removed_count + 1
+        end
+    end)
+
+    logger.dbg("ReadwiseReader:reconcileLocalDocuments: removed", removed_count, "articles no longer on server")
+    return removed_count
+end
+
+function ReadwiseReader:documentExists(doc_id)
+    return self:findLocalDocumentByReadwiseId(doc_id) ~= nil
 end
 
 function ReadwiseReader:downloadDocument(document)
@@ -1239,16 +1581,18 @@ function ReadwiseReader:downloadDocument(document)
         return "skipped"
     end
     
-    self:showProgress(string.format("Processing: %s", document.title or "Untitled"))
-    
     -- Store author metadata from the API
     self:storeAuthorMetadata(document.id, document.author)
-    
+
+    -- Store source URL for highlight export
+    self:storeSourceUrlMetadata(document.id, document.source_url)
+
+    -- Get HTML content (already fetched in getDocumentList)
     local content = document.html_content
-    
+
     if not content or content == "" or type(content) ~= "string" then
         logger.warn("ReadwiseReader:downloadDocument: no HTML content available for", document.id)
-        
+
         local basic_content = string.format([[
 <h1>%s</h1>
 <p><strong>Author:</strong> %s</p>
@@ -1283,6 +1627,19 @@ function ReadwiseReader:downloadDocument(document)
     
     if success then
         logger.dbg("ReadwiseReader:downloadDocument: saved", document.id, "to", filepath)
+
+        -- Write metadata sidecar file for KOReader library integration
+        local status, err = pcall(function() self:setDocumentMetadata(filepath, document) end)
+        if not status then
+            logger.warn("ReadwiseReader:downloadDocument: metadata writing failed:", err)
+        end
+
+        -- Update KOReader collections
+        local coll_status, coll_err = pcall(function() self:updateDocumentCollections(filepath, document) end)
+        if not coll_status then
+            logger.warn("ReadwiseReader:downloadDocument: collection update failed:", coll_err)
+        end
+
         return "downloaded"
     else
         logger.err("ReadwiseReader:downloadDocument: failed to write file")
@@ -1302,7 +1659,12 @@ function ReadwiseReader:processHtmlContent(content, document)
     local total_article_size = #decoded_content  -- Start with text size
     local max_article_size = self.max_image_size_mb * 1024 * 1024
     local images_stopped = false
-    
+
+    if total_article_size > max_article_size then
+        images_stopped = true
+        logger.dbg("ReadwiseReader:processHtmlContent: text content already exceeds size limit, skipping all image downloads")
+    end
+
     local html = string.format([[
 <!DOCTYPE html>
 <html>
@@ -1673,6 +2035,9 @@ function ReadwiseReader:fetchAndEncodeImage(url)
 end
 
 function ReadwiseReader:showProgress(text)
+    if self.progress_message then
+        UIManager:close(self.progress_message)
+    end
     self.progress_message = InfoMessage:new{text = text, timeout = 1}
     UIManager:show(self.progress_message)
     UIManager:forceRePaint()
@@ -1687,8 +2052,8 @@ end
 
 function ReadwiseReader:archiveDocument(document_id)
     logger.dbg("ReadwiseReader:archiveDocument: archiving", document_id)
-    
-    local endpoint = "/update/" .. document_id
+
+    local endpoint = "/update/" .. document_id .. "/"
     local body = {
         location = "archive"
     }
@@ -1697,8 +2062,9 @@ function ReadwiseReader:archiveDocument(document_id)
     
     if result then
         logger.dbg("ReadwiseReader:archiveDocument: successfully archived", document_id)
-        -- Remove author metadata when document is archived
+        -- Remove metadata when document is archived
         self:removeAuthorMetadata(document_id)
+        self:removeSourceUrlMetadata(document_id)
         return true
     else
         logger.err("ReadwiseReader:archiveDocument: failed to archive", document_id, err)
@@ -1732,27 +2098,21 @@ function ReadwiseReader:processFinishedDocuments()
     local archived_count = 0
     local deleted_count = 0
     
-    for entry in lfs.dir(self.directory) do
-        if entry ~= "." and entry ~= ".." then
-            local filepath = self.directory .. entry
+    self:forEachLocalDocument(function(doc_id, filepath)
+        if DocSettings:hasSidecarFile(filepath) then
+            local doc_settings = DocSettings:open(filepath)
+            local summary = doc_settings:readSetting("summary")
+            local status = summary and summary.status
             
-            if lfs.attributes(filepath, "mode") == "file" and DocSettings:hasSidecarFile(filepath) then
-                local doc_settings = DocSettings:open(filepath)
-                local summary = doc_settings:readSetting("summary")
-                local status = summary and summary.status
-                
-                if status == "complete" then
-                    local doc_id = self:getDocumentIdFromPath(filepath)
-                    
-                    if doc_id and self:archiveDocument(doc_id) then
-                        archived_count = archived_count + 1
-                        FileManager:deleteFile(filepath, true)
-                        deleted_count = deleted_count + 1
-                    end
+            if status == "complete" then
+                if self:archiveDocument(doc_id) then
+                    archived_count = archived_count + 1
+                    FileManager:deleteFile(filepath, true)
+                    deleted_count = deleted_count + 1
                 end
             end
         end
-    end
+    end)
     
     return archived_count, deleted_count
 end
@@ -1795,45 +2155,43 @@ function ReadwiseReader:synchronize()
     end
     
     local cleaned_count = self:cleanupArchivedDocuments()
-    self:hideProgress()
     
     self:showProgress("Processing finished articles…")
     local archived_count, deleted_count = self:processFinishedDocuments()
-    self:hideProgress()
     
     self:showProgress("Getting document list…")
     local documents = self:getDocumentList()
-    self:hideProgress()
     
     if not documents then
+        self:hideProgress()
         UIManager:show(InfoMessage:new{ text = "Failed to get document list from Readwise Reader." })
         return
     end
     
     self:updateAvailableTags(documents)
-    
+
+    -- Remove local articles that no longer match server state
+    local reconciled_count = self:reconcileLocalDocuments(documents)
+    self:hideProgress()
+
     local filtered_documents = {}
-    local excluded_count = 0
     local existing_count = 0
-    
+
     for _, document in ipairs(documents) do
-        if self:shouldSkipDocument(document) then
-            excluded_count = excluded_count + 1
-        elseif self:documentExists(document.id) then
+        if self:documentExists(document.id) then
             existing_count = existing_count + 1
         else
             table.insert(filtered_documents, document)
         end
     end
-    
-    if #filtered_documents == 0 and cleaned_count == 0 and archived_count == 0 and highlights_exported == 0 then
+
+    if #filtered_documents == 0 and cleaned_count == 0 and archived_count == 0 and highlights_exported == 0 and reconciled_count == 0 then
         local msg = "No new articles found and no changes to process."
         if existing_count > 0 then
             msg = msg .. "\n" .. string.format("Skipped %d existing articles.", existing_count)
         end
-        if excluded_count > 0 then
-            msg = msg .. "\n" .. string.format("Excluded %d articles due to tags/locations.", excluded_count)
-        end
+        
+        self:hideProgress()
         UIManager:show(InfoMessage:new{ text = msg })
         
         self.last_sync_time = sync_start_time
@@ -1844,12 +2202,14 @@ function ReadwiseReader:synchronize()
     local downloaded = 0
     local skipped = 0
     local failed = 0
-    
+
+    self:initCollectionTracking()
+
     for i, document in ipairs(filtered_documents) do
-        self:showProgress(string.format("Downloading %d of %d…", i, #filtered_documents))
-        
+        self:showProgress(string.format("Downloading %d of %d: %s", i, #filtered_documents, document.title))
+
         local result = self:downloadDocument(document)
-        
+
         if result == "downloaded" then
             downloaded = downloaded + 1
         elseif result == "skipped" then
@@ -1857,8 +2217,16 @@ function ReadwiseReader:synchronize()
         else
             failed = failed + 1
         end
+
+        -- Periodically save collection changes to prevent data loss on crash
+        if i % 10 == 0 then
+            self:saveCollections()
+        end
     end
-    
+
+    -- Final save for any remaining collection changes
+    self:saveCollections()
+
     self:hideProgress()
     
     self.last_sync_time = sync_start_time
@@ -1879,27 +2247,27 @@ function ReadwiseReader:synchronize()
     end
     
     if skipped > 0 then
-        msg = msg .. "\n" .. string.format("Skipped (other): %d", skipped)
+        msg = msg .. "\n" .. string.format("Skipped (tags or location): %d", skipped)
     end
     
     if failed > 0 then
         msg = msg .. "\n" .. string.format("Failed: %d", failed)
     end
-    
-    if excluded_count > 0 then
-        msg = msg .. "\n" .. string.format("Excluded due to tags/locations: %d", excluded_count)
-    end
-    
+
     if cleaned_count > 0 then
         msg = msg .. "\n" .. string.format("Cleaned up archived: %d", cleaned_count)
     end
-    
+
+    if reconciled_count > 0 then
+        msg = msg .. "\n" .. string.format("Removed (no longer on server): %d", reconciled_count)
+    end
+
     if archived_count > 0 then
         msg = msg .. "\n" .. string.format("Archived in Readwise: %d", archived_count)
         msg = msg .. "\n" .. string.format("Deleted locally: %d", deleted_count)
     end
     
-    if downloaded == 0 and skipped == 0 and failed == 0 and cleaned_count == 0 and archived_count == 0 and excluded_count == 0 and existing_count == 0 and highlights_exported == 0 then
+    if downloaded == 0 and skipped == 0 and failed == 0 and cleaned_count == 0 and archived_count == 0 and reconciled_count == 0 and existing_count == 0 and highlights_exported == 0 then
         msg = msg .. "\n" .. "No changes to process."
     end
     
@@ -1932,8 +2300,11 @@ function ReadwiseReader:saveSettings()
         excluded_locations = self.excluded_locations,
         document_locations = self.document_locations,
         document_authors = self.document_authors,
+        document_source_urls = self.document_source_urls,
         download_images = self.download_images,
         max_image_size_mb = self.max_image_size_mb,
+        max_articles_to_download = self.max_articles_to_download,
+        sync_only_koreader_tag = self.sync_only_koreader_tag,
     }
     self.readwise_settings:saveSetting("readwisereader", settings)
     self.readwise_settings:flush()
