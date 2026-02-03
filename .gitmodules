@@ -118,3 +118,6 @@
 [submodule "homeassistant.koplugin"]
 	path = homeassistant.koplugin
 	url = https://github.com/moritz-john/homeassistant.koplugin.git
+[submodule "highlightsync.koplugin"]
+	path = highlightsync.koplugin
+	url = https://github.com/gitalexcampos/highlightsync.koplugin
