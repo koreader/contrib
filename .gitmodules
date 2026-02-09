@@ -121,3 +121,6 @@
 [submodule "highlightsync.koplugin"]
 	path = highlightsync.koplugin
 	url = https://github.com/gitalexcampos/highlightsync.koplugin
+[submodule "maximum.koplugin"]
+	path = maximum.koplugin
+	url = https://github.com/Shac0x/maximum.koplugin
