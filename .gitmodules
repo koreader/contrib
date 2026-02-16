@@ -124,3 +124,6 @@
 [submodule "maximum.koplugin"]
 	path = maximum.koplugin
 	url = https://github.com/Shac0x/maximum.koplugin
+[submodule "notificationlistener.koplugin"]
+	path = notificationlistener.koplugin
+	url = https://github.com/omer-faruq/notificationlistener.koplugin
