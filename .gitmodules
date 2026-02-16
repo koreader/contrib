@@ -130,3 +130,6 @@
 [submodule "phrasedeck.koplugin"]
 	path = phrasedeck.koplugin
 	url = https://github.com/omer-faruq/phrasedeck.koplugin
+[submodule "applauncher.koplugin"]
+	path = applauncher.koplugin
+	url = https://github.com/omer-faruq/applauncher.koplugin
