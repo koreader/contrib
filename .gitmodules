@@ -127,3 +127,6 @@
 [submodule "notificationlistener.koplugin"]
 	path = notificationlistener.koplugin
 	url = https://github.com/omer-faruq/notificationlistener.koplugin
+[submodule "phrasedeck.koplugin"]
+	path = phrasedeck.koplugin
+	url = https://github.com/omer-faruq/phrasedeck.koplugin
