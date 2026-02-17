@@ -133,3 +133,6 @@
 [submodule "applauncher.koplugin"]
 	path = applauncher.koplugin
 	url = https://github.com/omer-faruq/applauncher.koplugin
+[submodule "instapaper.koplugin"]
+	path = instapaper.koplugin
+	url = https://github.com/omer-faruq/instapaper.koplugin
