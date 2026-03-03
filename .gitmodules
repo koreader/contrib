@@ -139,3 +139,6 @@
 [submodule "kagi-news.koplugin"]
 	path = kagi-news.koplugin
 	url = https://github.com/ysfsvm/kagi-news.koplugin/
+[submodule "HighlightImport.koplugin"]
+	path = HighlightImport.koplugin
+	url = https://github.com/nojux-official/HighlightImport.koplugin
