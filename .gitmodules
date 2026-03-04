@@ -142,3 +142,6 @@
 [submodule "HighlightImport.koplugin"]
 	path = HighlightImport.koplugin
 	url = https://github.com/nojux-official/HighlightImport.koplugin
+[submodule "quickrss.koplugin"]
+	path = quickrss.koplugin
+	url = https://github.com/qewer33/quickrss.koplugin
