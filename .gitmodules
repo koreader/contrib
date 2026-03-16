@@ -103,6 +103,9 @@
 [submodule "appstore.koplugin"]
 	path = appstore.koplugin
 	url = https://github.com/omer-faruq/appstore.koplugin
+[submodule "solitaire.koplugin"]
+	path = solitaire.koplugin
+	url = https://github.com/Lalocaballero/solitaire.koplugin.git
 [submodule "readingstreak.koplugin"]
 	path = readingstreak.koplugin
 	url = https://github.com/advokatb/readingstreak.koplugin.git
