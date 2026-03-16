@@ -33,7 +33,7 @@
 	url = https://github.com/syakhisk/readingruler.koplugin
 [submodule "kochess.koplugin"]
 	path = kochess.koplugin
-	url = https://github.com/bateast/kochess
+	url = https://github.com/coffman/kochess.koplugin.git
 [submodule "review.koplugin"]
 	path = review.koplugin
 	url = git@framagit.org:Brumaire/koreader-review-annotations-plugins.git
@@ -106,3 +106,48 @@
 [submodule "solitaire.koplugin"]
 	path = solitaire.koplugin
 	url = https://github.com/Lalocaballero/solitaire.koplugin.git
+[submodule "readingstreak.koplugin"]
+	path = readingstreak.koplugin
+	url = https://github.com/advokatb/readingstreak.koplugin.git
+[submodule "koassistant.koplugin"]
+	path = koassistant.koplugin
+	url = https://github.com/zeeyado/koassistant.koplugin.git
+[submodule "localsend.koplugin"]
+	path = localsend.koplugin
+	url = https://github.com/kaikozlov/localsend.koplugin.git
+[submodule "sleeplogger.koplugin"]
+	path = sleeplogger.koplugin
+	url = https://github.com/theiltho/koreader-sleeplogger.git
+[submodule "homeassistant.koplugin"]
+	path = homeassistant.koplugin
+	url = https://github.com/moritz-john/homeassistant.koplugin.git
+[submodule "highlightsync.koplugin"]
+	path = highlightsync.koplugin
+	url = https://github.com/gitalexcampos/highlightsync.koplugin
+[submodule "maximum.koplugin"]
+	path = maximum.koplugin
+	url = https://github.com/Shac0x/maximum.koplugin
+[submodule "notificationlistener.koplugin"]
+	path = notificationlistener.koplugin
+	url = https://github.com/omer-faruq/notificationlistener.koplugin
+[submodule "phrasedeck.koplugin"]
+	path = phrasedeck.koplugin
+	url = https://github.com/omer-faruq/phrasedeck.koplugin
+[submodule "applauncher.koplugin"]
+	path = applauncher.koplugin
+	url = https://github.com/omer-faruq/applauncher.koplugin
+[submodule "instapaper.koplugin"]
+	path = instapaper.koplugin
+	url = https://github.com/omer-faruq/instapaper.koplugin
+[submodule "kagi-news.koplugin"]
+	path = kagi-news.koplugin
+	url = https://github.com/ysfsvm/kagi-news.koplugin/
+[submodule "HighlightImport.koplugin"]
+	path = HighlightImport.koplugin
+	url = https://github.com/nojux-official/HighlightImport.koplugin
+[submodule "quickrss.koplugin"]
+	path = quickrss.koplugin
+	url = https://github.com/qewer33/quickrss.koplugin
+[submodule "webdavfetcher.koplugin"]
+	path = webdavfetcher.koplugin
+	url = https://github.com/karlb/webdavfetcher.koplugin
