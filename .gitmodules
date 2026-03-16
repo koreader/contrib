@@ -151,3 +151,6 @@
 [submodule "webdavfetcher.koplugin"]
 	path = webdavfetcher.koplugin
 	url = https://github.com/karlb/webdavfetcher.koplugin
+[submodule "incognito.koplugin"]
+	path = incognito.koplugin
+	url = https://github.com/Craftwork2720/incognito.koplugin
