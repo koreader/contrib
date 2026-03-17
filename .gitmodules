@@ -154,3 +154,6 @@
 [submodule "incognito.koplugin"]
 	path = incognito.koplugin
 	url = https://github.com/Craftwork2720/incognito.koplugin
+[submodule "simpleui.koplugin"]
+	path = simpleui.koplugin
+	url = https://github.com/doctorhetfield-cmd/simpleui.koplugin
