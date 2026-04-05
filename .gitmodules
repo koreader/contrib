@@ -160,3 +160,6 @@
 [submodule "filesync.koplugin"]
 	path = filesync.koplugin
 	url = https://github.com/abrahamnm/filesync.koplugin
+[submodule "bookends.koplugin"]
+	path = bookends.koplugin
+	url = https://github.com/AndyHazz/bookends.koplugin.git
