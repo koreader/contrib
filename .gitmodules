@@ -157,6 +157,9 @@
 [submodule "simpleui.koplugin"]
 	path = simpleui.koplugin
 	url = https://github.com/doctorhetfield-cmd/simpleui.koplugin
+[submodule "customisablesleepscreen.koplugin"]
+	path = customisablesleepscreen.koplugin
+	url = https://github.com/pxlflux/customisablesleepscreen.koplugin
 [submodule "filesync.koplugin"]
 	path = filesync.koplugin
 	url = https://github.com/abrahamnm/filesync.koplugin
