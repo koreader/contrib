@@ -166,3 +166,6 @@
 [submodule "bookends.koplugin"]
 	path = bookends.koplugin
 	url = https://github.com/AndyHazz/bookends.koplugin.git
+[submodule "appearance.koplugin"]
+	path = appearance.koplugin
+	url = https://github.com/Euphoriyy/appearance.koplugin
