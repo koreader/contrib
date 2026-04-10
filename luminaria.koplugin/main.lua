@@ -289,6 +289,7 @@ end
 local function showConfigDialog(callback)
   local current_token = getSetting("upload_token", "")
   local current_path  = getSetting("export_path", "/mnt/onboard/.adds/koreader/clipboard/")
+  local auto_sync     = getSetting("auto_sync", true)
 
   local dialog
   dialog = MultiInputDialog:new{
@@ -304,6 +305,11 @@ local function showConfigDialog(callback)
         description = "Highlights export folder",
         hint        = "/mnt/onboard/.adds/koreader/clipboard/",
         text        = current_path,
+      },
+      {
+        description = "Auto-sync on WiFi? (true/false)",
+        hint        = "true",
+        text        = auto_sync and "true" or "false",
       },
     },
     buttons = {
