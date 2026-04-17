@@ -169,3 +169,6 @@
 [submodule "appearance.koplugin"]
 	path = appearance.koplugin
 	url = https://github.com/Euphoriyy/appearance.koplugin
+[submodule "shortcutstoolbar.koplugin"]
+	path = shortcutstoolbar.koplugin
+	url = https://github.com/xusoo/shortcutstoolbar.koplugin
