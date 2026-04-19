@@ -62,8 +62,17 @@ local function showStatus(text)
   return msg
 end
 
+-- ── Simple content hash (djb2) for change detection
+local function hashContent(content)
+  local h = 5381
+  for i = 1, #content do
+    h = ((h * 33) + content:byte(i)) % 2147483648
+  end
+  return tostring(h)
+end
+
 -- ── HTTP upload — loads socket lazily
-local function uploadToWorker(content, token)
+local function uploadToWorker(content, token, silent)
   if not http then
     local ok, m = pcall(require, "socket.http")
     if not ok then return false, "socket.http not available" end
@@ -75,12 +84,25 @@ local function uploadToWorker(content, token)
     ltn12 = m
   end
 
+  local content_hash = hashContent(content)
+  local last_hash = getSetting("last_content_hash", "")
+
+  -- On silent (auto) sync: skip upload if content unchanged — saves KV writes
+  -- On manual sync: always send so the user gets accurate rate limit feedback
+  if silent and content_hash == last_hash then
+    logger.info("Luminaria: content unchanged — skipping silent upload")
+    return true, "unchanged"
+  end
+
   local response_body = {}
   local upload_url = WORKER_URL .. "/upload"
   local request_headers = {
-    ["Content-Type"]   = "text/plain; charset=utf-8",
-    ["Authorization"]  = "Bearer " .. token,
-    ["Content-Length"] = tostring(#content),
+    ["Content-Type"]     = "text/plain; charset=utf-8",
+    ["Authorization"]    = "Bearer " .. token,
+    ["Content-Length"]   = tostring(#content),
+    ["X-Content-Hash"]   = content_hash,
+    ["X-Source"]         = "koreader",
+    ["X-Sync-Manual"]    = silent and "0" or "1",
   }
   local ok, code
   local success, err = pcall(function()
@@ -110,8 +132,15 @@ local function uploadToWorker(content, token)
     end
   end)
   if not success then return false, "Network error: " .. tostring(err) end
-  if code == 200   then return true,  "OK" end
+  if code == 200 then
+    setSetting("last_content_hash", content_hash)
+    return true, "OK"
+  end
+  if code == 304 then
+    return true, "unchanged"
+  end
   if code == 401   then return false, "Invalid token — check settings" end
+  if code == 429   then return false, "rate_limited" end
   return false, "Server error: " .. tostring(code)
 end
 
@@ -201,7 +230,6 @@ end
 
 -- ── Build markdown from reading history
 local function buildMarkdown()
-  -- Lazy load DocSettings
   if not DocSettings then
     local ok, m = pcall(require, "docsettings")
     if not ok then
@@ -211,7 +239,6 @@ local function buildMarkdown()
     DocSettings = m
   end
 
-  -- Lazy load ReadHistory
   if not ReadHistory then
     local ok, m = pcall(require, "readhistory")
     if not ok then
@@ -347,54 +374,104 @@ local function showConfigDialog(callback)
   UIManager:show(dialog)
 end
 
+-- ── Check if a book is currently open in the reader
+local function isReaderOpen()
+  -- Method 1: check if ReaderUI.instance exists (most reliable)
+  local ok1, result1 = pcall(function()
+    local ReaderUI = require("apps/reader/readerui")
+    return ReaderUI and ReaderUI.instance ~= nil
+  end)
+  if ok1 and result1 then return true end
+
+  -- Method 2: scan UIManager window stack
+  local ok2, result2 = pcall(function()
+    if UIManager._window_stack then
+      for i = #UIManager._window_stack, 1, -1 do
+        local w = UIManager._window_stack[i]
+        if w and w.widget then
+          local name = w.widget.name or (w.widget.view and "ReaderUI")
+          if name == "ReaderUI" then return true end
+        end
+      end
+    end
+    return false
+  end)
+  if ok2 and result2 then return true end
+
+  return false
+end
+
 -- ── Full export + upload
-local function exportAndSync()
+-- silent=true: skip all notifications (used during auto-sync while reading)
+local function exportAndSync(silent)
   local token = getSetting("upload_token", "")
   if token == "" then
-    showConfigDialog(function()
-      UIManager:scheduleIn(0.5, exportAndSync)
-    end)
+    if not silent then
+      showConfigDialog(function()
+        UIManager:scheduleIn(0.5, function() exportAndSync(false) end)
+      end)
+    end
     return
   end
 
-  local msg1 = showStatus("Luminaria: Exporting highlights…")
+  local msg1
+  if not silent then msg1 = showStatus("Luminaria: Exporting highlights…") end
   local content, book_count, highlight_count = buildMarkdown()
-  UIManager:close(msg1)
+  if msg1 then UIManager:close(msg1) end
 
   if not content or highlight_count == 0 then
-    UIManager:show(InfoMessage:new{
-      text    = "Luminaria: No highlights found.\n\nOpen a book, make some highlights,\nthen try again.",
-      timeout = 4,
-    })
+    if not silent then
+      UIManager:show(InfoMessage:new{
+        text    = "Luminaria: No highlights found.\n\nOpen a book, make some highlights,\nthen try again.",
+        timeout = 4,
+      })
+    end
     return
   end
 
   writeExportFile(content)
 
-  local msg2 = showStatus(
-    "Luminaria: Syncing " .. highlight_count .. " highlight" ..
-    (highlight_count ~= 1 and "s" or "") .. " from " ..
-    book_count .. " book" .. (book_count ~= 1 and "s" or "") .. "…"
-  )
-  local ok, result = uploadToWorker(content, token)
-  UIManager:close(msg2)
+  local msg2
+  if not silent then
+    msg2 = showStatus(
+      "Luminaria: Syncing " .. highlight_count .. " highlight" ..
+      (highlight_count ~= 1 and "s" or "") .. " from " ..
+      book_count .. " book" .. (book_count ~= 1 and "s" or "") .. "…"
+    )
+  end
+  local ok, result = uploadToWorker(content, token, silent)
+  if msg2 then UIManager:close(msg2) end
 
   if ok then
-    UIManager:show(InfoMessage:new{
-      text    = "✓ Luminaria: Synced!\n\n" ..
-                highlight_count .. " highlight" .. (highlight_count ~= 1 and "s" or "") ..
-                " from " .. book_count .. " book" .. (book_count ~= 1 and "s" or "") ..
-                "\nare now live on luminaria.uk.",
-      timeout = 5,
-    })
-    logger.info("Luminaria: synced " .. highlight_count .. " highlights from " .. book_count .. " books")
+    if result ~= "unchanged" and not silent then
+      UIManager:show(InfoMessage:new{
+        text    = "✓ Luminaria: Synced!\n\n" ..
+                  highlight_count .. " highlight" .. (highlight_count ~= 1 and "s" or "") ..
+                  " from " .. book_count .. " book" .. (book_count ~= 1 and "s" or "") ..
+                  "\nare now live on luminaria.uk.",
+        timeout = 5,
+      })
+    end
+    logger.info("Luminaria: sync result — " .. result)
   else
-    UIManager:show(InfoMessage:new{
-      text    = "✗ Luminaria: Sync failed\n\n" .. tostring(result) ..
-                "\n\nCheck your token in Settings.",
-      timeout = 5,
-    })
-    logger.warn("Luminaria: sync failed — " .. tostring(result))
+    if result == "rate_limited" then
+      if not silent then
+        UIManager:show(InfoMessage:new{
+          text    = "Luminaria: Weekly sync limit reached.\n\nUpgrade to Premium for unlimited syncs.\nluminaria.uk/upgrade",
+          timeout = 6,
+        })
+      end
+      logger.info("Luminaria: sync rate limited")
+    else
+      if not silent then
+        UIManager:show(InfoMessage:new{
+          text    = "✗ Luminaria: Sync failed\n\n" .. tostring(result) ..
+                    "\n\nCheck your token in Settings.",
+          timeout = 5,
+        })
+      end
+      logger.warn("Luminaria: sync failed — " .. tostring(result))
+    end
   end
 end
 
@@ -464,25 +541,28 @@ local function onWifiConnected()
     local tier = checkTier(token)
     if tier ~= "paid" then
       logger.info("Luminaria: free tier — auto-sync skipped")
-      UIManager:show(InfoMessage:new{
-        text    = "Luminaria: Auto-sync is a premium feature.\n\nVisit luminaria.uk/upgrade\nto subscribe for £2.99/month.",
-        timeout = 6,
-      })
+      -- Only show upgrade prompt if reader is not open
+      if not isReaderOpen() then
+        UIManager:show(InfoMessage:new{
+          text    = "Luminaria: Auto-sync is a premium feature.\n\nVisit luminaria.uk/upgrade\nto subscribe for £2.99/month.",
+          timeout = 6,
+        })
+      end
       return
     end
-    exportAndSync()
+    -- Sync silently if a book is open, with notification otherwise
+    exportAndSync(isReaderOpen())
   end)
 end
 
 -- ── Wake from sleep handler
-local wakeInProgress = false  -- guard against multiple firings per wake
+local wakeInProgress = false
 
 local function onWake()
   if not getSetting("auto_sync", true) then return end
   local token = getSetting("upload_token", "")
   if token == "" then return end
 
-  -- Prevent multiple simultaneous wake syncs
   if wakeInProgress then
     logger.info("Luminaria: wake already in progress — skipping")
     return
@@ -491,8 +571,7 @@ local function onWake()
 
   -- Poll for WiFi after wake — Kobo puts WiFi to sleep so it needs time to reconnect.
   -- Calls the shared debounced onWifiConnected, so if afterWifiConnected already fired
-  -- first the poll's call is blocked, and if the poll fires first afterWifiConnected's
-  -- call will be blocked. Either way only one sync happens.
+  -- first the poll's call is blocked, and vice versa. Either way only one sync happens.
   local attempts = 0
   local max_attempts = 12  -- 12 x 5s = 60 seconds max wait
 
@@ -534,15 +613,12 @@ function LuminariaSyncPlugin:onResume()
 end
 
 function LuminariaSyncPlugin:init()
-  -- Register to main menu
   if self.ui and self.ui.menu then
     self.ui.menu:registerToMainMenu(self)
   elseif self.ui then
     logger.warn("Luminaria: self.ui.menu not available — menu registration skipped")
   end
 
-  -- Hook UIManager's broadcastEvent to catch Resume in all contexts
-  -- Wrapped in pcall so a missing method doesn't crash plugin init
   pcall(function()
     if UIManager.broadcastEvent then
       local orig_broadcast = UIManager.broadcastEvent
@@ -559,24 +635,20 @@ function LuminariaSyncPlugin:init()
     end
   end)
 
-  -- Hook into export menu
   local ok, ExportHelper = pcall(require, "apps/filemanager/filemanagerexport")
   if ok and ExportHelper and ExportHelper.registerExporter then
     ExportHelper.registerExporter({
       name      = "luminaria",
       label     = "Luminaria Sync",
-      export    = exportAndSync,
+      export    = function() exportAndSync(false) end,
       configure = function() showConfigDialog() end,
     })
   end
 
-  -- Hook WiFi events — lazy load NetworkMgr
   local nmok, nm = pcall(require, "ui/network/manager")
   if nmok and nm then
     NetworkMgr = nm
 
-    -- Hook all three WiFi paths — different KOReader versions and firmware fire
-    -- different callbacks. The debounce in onWifiConnected prevents double syncing.
     local orig_after = NetworkMgr.afterWifiConnected
     NetworkMgr.afterWifiConnected = function(mgr, ...)
       if orig_after then orig_after(mgr, ...) end
@@ -618,12 +690,11 @@ function LuminariaSyncPlugin:addToMainMenu(menu_items)
     sub_item_table = {
       {
         text     = "Sync highlights now",
-        callback = exportAndSync,
+        callback = function() exportAndSync(false) end,
       },
       {
         text     = "Link device (6-digit code)",
         callback = function()
-          -- Lazy load http/https/ltn12 for the redeem request
           if not http then
             local ok, m = pcall(require, "socket.http") if ok then http = m end
           end
@@ -663,7 +734,6 @@ function LuminariaSyncPlugin:addToMainMenu(menu_items)
 
                     local msg = showStatus("Luminaria: Linking device…")
 
-                    -- Redeem the code
                     local response_body = {}
                     local redeem_url = WORKER_URL .. "/link/redeem?code=" .. code
                     local ok_req, err_req = pcall(function()
@@ -729,7 +799,6 @@ function LuminariaSyncPlugin:addToMainMenu(menu_items)
         callback = function()
           local current = getSetting("auto_sync", true)
           if not current then
-            -- Enabling — verify paid tier first
             local token = getSetting("upload_token", "")
             if token == "" then
               UIManager:show(InfoMessage:new{
