@@ -172,3 +172,7 @@
 [submodule "shortcutstoolbar.koplugin"]
 	path = shortcutstoolbar.koplugin
 	url = https://github.com/xusoo/shortcutstoolbar.koplugin
+[submodule "game2048.koplugin"]
+	path = game2048.koplugin
+	url = https://github.com/stefan-misik/game2048.koplugin
+	branch = master
