@@ -176,3 +176,8 @@
 	path = game2048.koplugin
 	url = https://github.com/stefan-misik/game2048.koplugin
 	branch = master
+[submodule "fastdictlookup.koplugin"]
+	path = fastdictlookup.koplugin
+	url = https://github.com/Sirozha1337/fastdictlookup.koplugin.git
+	branch = main
+
