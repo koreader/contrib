@@ -193,3 +193,6 @@
 [submodule "send2notion.koplugin"]
 	path = send2notion.koplugin
 	url = https://github.com/omer-faruq/send2notion.koplugin
+[submodule "smartdeck.koplugin"]
+	path = smartdeck.koplugin
+	url = https://github.com/omer-faruq/smartdeck.koplugin
