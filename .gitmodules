@@ -187,3 +187,6 @@
 [submodule "send2tasks.koplugin"]
 	path = send2tasks.koplugin
 	url = https://github.com/omer-faruq/send2tasks.koplugin
+[submodule "send2telegram.koplugin"]
+	path = send2telegram.koplugin
+	url = https://github.com/omer-faruq/send2telegram.koplugin
