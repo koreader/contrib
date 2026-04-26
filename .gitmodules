@@ -190,3 +190,6 @@
 [submodule "send2telegram.koplugin"]
 	path = send2telegram.koplugin
 	url = https://github.com/omer-faruq/send2telegram.koplugin
+[submodule "send2notion.koplugin"]
+	path = send2notion.koplugin
+	url = https://github.com/omer-faruq/send2notion.koplugin
