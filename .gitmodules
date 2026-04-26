@@ -196,3 +196,6 @@
 [submodule "smartdeck.koplugin"]
 	path = smartdeck.koplugin
 	url = https://github.com/omer-faruq/smartdeck.koplugin
+[submodule "kotranslate.koplugin"]
+	path = kotranslate.koplugin
+	url = https://github.com/omer-faruq/kotranslate.koplugin
