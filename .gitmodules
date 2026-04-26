@@ -181,3 +181,6 @@
 	url = https://github.com/Sirozha1337/fastdictlookup.koplugin.git
 	branch = main
 
+[submodule "slidepuzzle.koplugin"]
+	path = slidepuzzle.koplugin
+	url = https://github.com/omer-faruq/slidepuzzle.koplugin
