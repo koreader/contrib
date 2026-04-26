@@ -184,3 +184,6 @@
 [submodule "slidepuzzle.koplugin"]
 	path = slidepuzzle.koplugin
 	url = https://github.com/omer-faruq/slidepuzzle.koplugin
+[submodule "send2tasks.koplugin"]
+	path = send2tasks.koplugin
+	url = https://github.com/omer-faruq/send2tasks.koplugin
