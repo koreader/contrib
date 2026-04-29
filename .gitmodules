@@ -199,3 +199,6 @@
 [submodule "kotranslate.koplugin"]
 	path = kotranslate.koplugin
 	url = https://github.com/omer-faruq/kotranslate.koplugin
+[submodule "20-20-20.koplugin"]
+	path = 20-20-20.koplugin
+	url = https://github.com/vardan-developer/20-20-20.koplugin.git
