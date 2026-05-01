@@ -205,3 +205,6 @@
 [submodule "checkers.koplugin"]
 	path = checkers.koplugin
 	url = https://github.com/kbarni/checkers.koplugin
+[submodule "zen_ui.koplugin"]
+	path = zen_ui.koplugin
+	url = https://github.com/AnthonyGress/zen_ui.koplugin
