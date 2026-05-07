@@ -211,3 +211,6 @@
 [submodule "readeck.koplugin"]
 	path = readeck.koplugin
 	url = https://github.com/iceyear/readeck.koplugin.git
+[submodule "speakword.koplugin"]
+	path = speakword.koplugin
+	url = https://github.com/anatoly314/speakword.koplugin.git
