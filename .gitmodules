@@ -208,3 +208,6 @@
 [submodule "zen_ui.koplugin"]
 	path = zen_ui.koplugin
 	url = https://github.com/AnthonyGress/zen_ui.koplugin
+[submodule "readeck.koplugin"]
+	path = readeck.koplugin
+	url = https://github.com/iceyear/readeck.koplugin.git
