@@ -214,3 +214,6 @@
 [submodule "speakword.koplugin"]
 	path = speakword.koplugin
 	url = https://github.com/anatoly314/speakword.koplugin.git
+[submodule "bookshelf.koplugin"]
+	path = bookshelf.koplugin
+	url = https://github.com/AndyHazz/bookshelf.koplugin.git
