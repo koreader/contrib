@@ -1,0 +1,48 @@
+// some fundamental pyhsical constants
+
+k=1.38064852e-23 //Boltzmann
+g=9.80665 //Gravitational acceleration
+
+G=6.67408e-11 //Univ. gravitational const.
+
+c=2.99792458e8 //Speed of light
+qe=1.602176565e-19 //Electron charge
+h=6.62606957e-34 //Planck
+
+my0=4*pi*1e-7 //Vacuum permeab.
+μ0=my0
+epsilon0=1/my0/c^2 //Vacuum permit.
+ε0=epsilon0
+
+me=9.10938346e-31 //Electron mass
+
+mp=1.672621898e-27 //Proton mass
+mn=1.674927471e-27 //Neutron mass
+
+u=1.660539040e-27 //Atomic unit
+
+R=8.3144598 //Gas constant
+Na=6.02214076e23 //Avogadro
+
+sigma=2*pi^5*k^4/15/h^3/c^2 //Stefan-Boltzmann
+
+E0=1367 //Solar constant
+
+
+rSun=6.96342e8 //Radius of the sun
+mSun=1.98892e30 //Mass of the sun
+
+rEarthEquator=12756.27e3/2 //Equatorial radius earth
+rEathPolar=12713.50e3/2 //Polar radius earth
+rEarth=(rEarthAquator+rEarthPolar)/2
+mEarth=5.9724e24 //Mass of the earth
+
+AE=149597870700 //Astronomical unit
+
+rMoon=3474e3/2 //Radius of the moon
+mMoon=7.346e22 //Mass of the moon
+
+malpha=4.001506179125*u //Mass of alpha
+
+mHe4Core=malpha
+

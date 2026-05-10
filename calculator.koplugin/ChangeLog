@@ -1,0 +1,51 @@
+Version: 1.2.0
+  add convert unit to reader highlight button dialog
+
+Version: 1.1.6
+  adapt to new TitleBar widget
+
+Version: 1.1.5
+  fix bug in update check, when connection is firewalled
+
+Version: 1.1.4
+  fix bug in update check
+  better formatting of significant places
+  better formatting when changing formerly entered formulas
+  typo in help text
+
+Version: 1.1.2
+  fix spaces/tabs help text
+
+Version: 1.1.1
+  Minor UX fixes
+
+Version: 1.1.0
+  Added conversion
+  Average function
+
+Version: 1.0.2
+  Natural sorting of variables
+
+Version: 1.0.1
+  Bug: Variable ans works now
+
+  Added automatic load of "init.calc"
+  Added fileselector for loading and saving files
+  Added logical xor and not
+  Added bitwise or, and, nand and xor
+  Added %= operator
+  Better handling (editing) of formulas
+  Improved keyboard layout (popups)
+  Improved handling of greek letters
+  Alphabetically sorting of variables
+  Added Engineering mode (Exponentials multiply of three)
+  Better presentation of results (rounding, trimming)
+  Changed rounding to significant places
+
+Version: 0.9.1
+  Use Unicode symbols instead of text (Translations!!!)
+  Typo in help text 3<4 -> true
+  Release package: Add `calculator.koplugin` folder
+
+Version: 0.9.0
+  Initial commit
