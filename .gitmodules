@@ -220,3 +220,6 @@
 [submodule "sokoban.koplugin"]
 	path = sokoban.koplugin
 	url = https://github.com/kbarni/sokoban.koplugin
+[submodule "calculator.koplugin"]
+	path = calculator.koplugin
+	url = https://github.com/shuvashish76/calculator.koplugin.git
