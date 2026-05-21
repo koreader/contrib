@@ -157,6 +157,66 @@
 [submodule "simpleui.koplugin"]
 	path = simpleui.koplugin
 	url = https://github.com/doctorhetfield-cmd/simpleui.koplugin
+[submodule "customisablesleepscreen.koplugin"]
+	path = customisablesleepscreen.koplugin
+	url = https://github.com/pxlflux/customisablesleepscreen.koplugin
 [submodule "filesync.koplugin"]
 	path = filesync.koplugin
 	url = https://github.com/abrahamnm/filesync.koplugin
+[submodule "bookends.koplugin"]
+	path = bookends.koplugin
+	url = https://github.com/AndyHazz/bookends.koplugin.git
+[submodule "appearance.koplugin"]
+	path = appearance.koplugin
+	url = https://github.com/Euphoriyy/appearance.koplugin
+[submodule "shortcutstoolbar.koplugin"]
+	path = shortcutstoolbar.koplugin
+	url = https://github.com/xusoo/shortcutstoolbar.koplugin
+[submodule "game2048.koplugin"]
+	path = game2048.koplugin
+	url = https://github.com/stefan-misik/game2048.koplugin
+	branch = master
+[submodule "fastdictlookup.koplugin"]
+	path = fastdictlookup.koplugin
+	url = https://github.com/Sirozha1337/fastdictlookup.koplugin.git
+	branch = main
+
+[submodule "slidepuzzle.koplugin"]
+	path = slidepuzzle.koplugin
+	url = https://github.com/omer-faruq/slidepuzzle.koplugin
+[submodule "send2tasks.koplugin"]
+	path = send2tasks.koplugin
+	url = https://github.com/omer-faruq/send2tasks.koplugin
+[submodule "send2telegram.koplugin"]
+	path = send2telegram.koplugin
+	url = https://github.com/omer-faruq/send2telegram.koplugin
+[submodule "send2notion.koplugin"]
+	path = send2notion.koplugin
+	url = https://github.com/omer-faruq/send2notion.koplugin
+[submodule "smartdeck.koplugin"]
+	path = smartdeck.koplugin
+	url = https://github.com/omer-faruq/smartdeck.koplugin
+[submodule "kotranslate.koplugin"]
+	path = kotranslate.koplugin
+	url = https://github.com/omer-faruq/kotranslate.koplugin
+[submodule "20-20-20.koplugin"]
+	path = 20-20-20.koplugin
+	url = https://github.com/vardan-developer/20-20-20.koplugin.git
+[submodule "checkers.koplugin"]
+	path = checkers.koplugin
+	url = https://github.com/kbarni/checkers.koplugin
+[submodule "zen_ui.koplugin"]
+	path = zen_ui.koplugin
+	url = https://github.com/AnthonyGress/zen_ui.koplugin
+[submodule "readeck.koplugin"]
+	path = readeck.koplugin
+	url = https://github.com/iceyear/readeck.koplugin.git
+[submodule "speakword.koplugin"]
+	path = speakword.koplugin
+	url = https://github.com/anatoly314/speakword.koplugin.git
+[submodule "bookshelf.koplugin"]
+	path = bookshelf.koplugin
+	url = https://github.com/AndyHazz/bookshelf.koplugin.git
+[submodule "sokoban.koplugin"]
+	path = sokoban.koplugin
+	url = https://github.com/kbarni/sokoban.koplugin
