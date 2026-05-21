@@ -1,3 +1,8 @@
+> [!CAUTION]
+> **This plugin is orphaned without a maintainer, no further updates possible.**
+
+---
+
 # Please update to the latest version (1.1.4)
 Versions up to 1.1.2 have a bug, which prevents calculator from start, if a newer version is detected!
 
