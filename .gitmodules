@@ -223,3 +223,7 @@
 [submodule "calculator.koplugin"]
 	path = calculator.koplugin
 	url = https://github.com/shuvashish76/calculator.koplugin.git
+[submodule "dynamicxray.koplugin"]
+	path = dynamicxray.koplugin
+	url = https://github.com/smartscripts-nl/dynamic-xray
+	branch = main
