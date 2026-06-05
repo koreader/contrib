@@ -230,3 +230,6 @@
 [submodule "frotz.koplugin"]
 	path = frotz.koplugin
 	url = https://github.com/kbarni/frotz.koplugin
+[submodule "provider-acorny-highlights.koplugin"]
+	path = provider-acorny-highlights.koplugin
+	url = https://github.com/momadacoding/provider-acorny-highlights.koplugin.git
