@@ -233,3 +233,6 @@
 [submodule "provider-acorny-highlights.koplugin"]
 	path = provider-acorny-highlights.koplugin
 	url = https://github.com/momadacoding/provider-acorny-highlights.koplugin.git
+[submodule "wireguard.koplugin"]
+	path = wireguard.koplugin
+	url = https://github.com/wtb04/wireguard.koplugin.git
