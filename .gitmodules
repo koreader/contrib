@@ -236,3 +236,6 @@
 [submodule "wireguard.koplugin"]
 	path = wireguard.koplugin
 	url = https://github.com/wtb04/wireguard.koplugin.git
+[submodule "backlog.koplugin"]
+	path = backlog.koplugin
+	url = https://github.com/cdrso/backlog.koplugin.git
