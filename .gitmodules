@@ -239,3 +239,6 @@
 [submodule "backlog.koplugin"]
 	path = backlog.koplugin
 	url = https://github.com/cdrso/backlog.koplugin.git
+[submodule "lingueez.koplugin"]
+	path = lingueez.koplugin
+	url = https://github.com/lysak-yurii/lingueez.koplugin.git
