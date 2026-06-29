@@ -242,3 +242,6 @@
 [submodule "lingueez.koplugin"]
 	path = lingueez.koplugin
 	url = https://github.com/lysak-yurii/lingueez.koplugin.git
+[submodule "luminaria.koplugin"]
+	path = luminaria.koplugin
+	url = https://github.com/jamesisonfire21-glitch/luminaria-koreader-plugin.git
