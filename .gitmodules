@@ -245,3 +245,6 @@
 [submodule "luminaria.koplugin"]
 	path = luminaria.koplugin
 	url = https://github.com/jamesisonfire21-glitch/luminaria-koreader-plugin.git
+[submodule "koreader-mosh"]
+	path = koreader-mosh
+	url = https://github.com/jnordlund/koreader-mosh.git
