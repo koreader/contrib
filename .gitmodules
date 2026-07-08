@@ -251,3 +251,6 @@
 [submodule "readinginsights"]
 	path = readinginsights.koplugin
 	url = https://github.com/peterboda236/readinginsights.koplugin.git
+[submodule "readinginsights.koplugin"]
+	path = readinginsights.koplugin
+	url = https://github.com/peterboda236/readinginsights.koplugin.git
