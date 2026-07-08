@@ -248,3 +248,6 @@
 [submodule "koreader-mosh"]
 	path = koreader-mosh
 	url = https://github.com/jnordlund/koreader-mosh.git
+[submodule "readinginsights.koplugin"]
+	path = readinginsights.koplugin
+	url = https://github.com/peterboda236/readinginsights.koplugin.git
