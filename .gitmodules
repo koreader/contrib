@@ -251,3 +251,7 @@
 [submodule "readinginsights.koplugin"]
 	path = readinginsights.koplugin
 	url = https://github.com/peterboda236/readinginsights.koplugin.git
+[submodule "wifiindicator.koplugin"]
+	path = wifiindicator.koplugin
+	url = https://github.com/asxelot/wifiindicator.koplugin.git
+	branch = main
