@@ -255,3 +255,6 @@
 	path = wifiindicator.koplugin
 	url = https://github.com/asxelot/wifiindicator.koplugin.git
 	branch = main
+[submodule "chinese.koplugin"]
+	path = chinese.koplugin
+	url = https://github.com/yangyingchao/chinese.koplugin.git
