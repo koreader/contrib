@@ -8,5 +8,5 @@ To users:
 
 To developers:
 * This is not a dump station of work-in-progress or deprecated features, please ensure it works when merging.
-* Each application should be a git submodule pointing to an upstream repo
+* Each application should be a git submodule pointing to an upstream repository.
 * Add a README.md / README file to explain the functionality of the application; if it works with certain devices, add a compatibility section in the README or a COMPATIBILITY file.
