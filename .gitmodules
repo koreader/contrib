@@ -260,4 +260,4 @@
 	url = https://github.com/yangyingchao/chinese.koplugin.git
 [submodule "bluetooth.koplugin"]
 	path = bluetooth.koplugin
-	url = git@github.com:linsyking/bluetooth.koplugin.git
+	url = https://github.com/linsyking/bluetooth.koplugin.git
