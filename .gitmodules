@@ -261,3 +261,6 @@
 [submodule "bluetooth.koplugin"]
 	path = bluetooth.koplugin
 	url = https://github.com/linsyking/bluetooth.koplugin.git
+[submodule "excludehistory.koplugin"]
+	path = excludehistory.koplugin
+	url = https://github.com/jperon/excludehistory.koplugin.git
