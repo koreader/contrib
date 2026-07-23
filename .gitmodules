@@ -264,3 +264,6 @@
 [submodule "excludehistory.koplugin"]
 	path = excludehistory.koplugin
 	url = https://github.com/jperon/excludehistory.koplugin.git
+[submodule "sendtodiscord.koplugin"]
+	path = sendtodiscord.koplugin
+	url = https://github.com/Intedai/sendtodiscord.koplugin.git
