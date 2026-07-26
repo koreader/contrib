@@ -267,3 +267,6 @@
 [submodule "sendtodiscord.koplugin"]
 	path = sendtodiscord.koplugin
 	url = https://github.com/Intedai/sendtodiscord.koplugin.git
+[submodule "neodb.koplugin"]
+	path = neodb.koplugin
+	url = https://github.com/neodb-social/neodb.koplugin.git
