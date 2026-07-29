@@ -270,3 +270,6 @@
 [submodule "neodb.koplugin"]
 	path = neodb.koplugin
 	url = https://github.com/neodb-social/neodb.koplugin.git
+[submodule "folderlock.koplugin"]
+	path = folderlock.koplugin
+	url = https://github.com/danieldecesaro/koreader-folderlock.git
