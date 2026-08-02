@@ -282,3 +282,6 @@
 [submodule "merchant.koplugin"]
 	path = merchant.koplugin
 	url = https://github.com/omer-faruq/merchant.koplugin
+[submodule "crossword-omerfaruq.koplugin"]
+	path = crossword-omerfaruq.koplugin
+	url = https://github.com/omer-faruq/crossword.koplugin
