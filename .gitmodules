@@ -279,3 +279,6 @@
 [submodule "inlinehints.koplugin"]
 	path = inlinehints.koplugin
 	url = https://github.com/omer-faruq/inlinehints.koplugin
+[submodule "merchant.koplugin"]
+	path = merchant.koplugin
+	url = https://github.com/omer-faruq/merchant.koplugin
