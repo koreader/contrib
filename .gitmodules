@@ -276,3 +276,6 @@
 [submodule "calendar.koplugin"]
 	path = calendar.koplugin
 	url = https://github.com/omer-faruq/calendar.koplugin
+[submodule "inlinehints.koplugin"]
+	path = inlinehints.koplugin
+	url = https://github.com/omer-faruq/inlinehints.koplugin
