@@ -273,3 +273,6 @@
 [submodule "folderlock.koplugin"]
 	path = folderlock.koplugin
 	url = https://github.com/danieldecesaro/koreader-folderlock.git
+[submodule "calendar.koplugin"]
+	path = calendar.koplugin
+	url = https://github.com/omer-faruq/calendar.koplugin
