@@ -288,3 +288,6 @@
 [submodule "offlinetranslate-koplugin"]
 	path = offlinetranslate-koplugin
 	url = https://github.com/fundacja-reborn/offlinetranslate-koplugin.git
+[submodule "kocatchup.koplugin"]
+	path = kocatchup.koplugin
+	url = https://github.com/paulbockewitz/kocatchup.koplugin.git
