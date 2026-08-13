@@ -294,3 +294,6 @@
 [submodule "kindlebtcontroller.koplugin"]
 	path = kindlebtcontroller.koplugin
 	url = https://github.com/finlater/kindlebtcontroller.koplugin.git
+[submodule "linefocus.koplugin"]
+	path = linefocus.koplugin
+	url = https://github.com/Fiddelis/linefocus.koplugin
