@@ -291,3 +291,6 @@
 [submodule "kocatchup.koplugin"]
 	path = kocatchup.koplugin
 	url = https://github.com/paulbockewitz/kocatchup.koplugin.git
+[submodule "kindlebtcontroller.koplugin"]
+	path = kindlebtcontroller.koplugin
+	url = https://github.com/finlater/kindlebtcontroller.koplugin.git
