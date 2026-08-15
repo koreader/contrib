@@ -27,8 +27,11 @@ local function doBuildHistory()
     local dir = G_reader_settings:readSetting("home_dir")
                 or require("apps/filemanager/filemanagerutil").getDefaultDir()
                 or "."
-    local file = io.popen("find '" .. dir .. "' -name 'metadata.*.lua' -exec stat -c '%N %Y' {} \\;")
     local records = {}
+    for k, v in pairs(ReadHistory.hist) do
+        records[k] = v
+    end
+    local file = io.popen("find '" .. dir .. "' -name 'metadata.*.lua' -exec stat -c '%N %Y' {} \\;")
     for line in file:lines() do
         local f, t = line:match("(.+) (%d+)")
         table.insert(records, {
