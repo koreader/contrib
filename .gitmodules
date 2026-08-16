@@ -297,3 +297,6 @@
 [submodule "linefocus.koplugin"]
 	path = linefocus.koplugin
 	url = https://github.com/Fiddelis/linefocus.koplugin
+[submodule "Swipe_Animation.koplugin"]
+	path = Swipe_Animation.koplugin
+	url = https://github.com/koplugin-swipe-animation/Swipe_Animation.koplugin
