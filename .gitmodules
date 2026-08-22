@@ -300,3 +300,6 @@
 [submodule "Swipe_Animation.koplugin"]
 	path = Swipe_Animation.koplugin
 	url = https://github.com/koplugin-swipe-animation/Swipe_Animation.koplugin
+[submodule "sudokuplus.koplugin"]
+	path = sudokuplus.koplugin
+	url = https://github.com/Borisvl/sudokuplus.koplugin.git
