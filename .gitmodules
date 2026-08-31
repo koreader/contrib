@@ -303,3 +303,6 @@
 [submodule "sudokuplus.koplugin"]
 	path = sudokuplus.koplugin
 	url = https://github.com/Borisvl/sudokuplus.koplugin.git
+[submodule "resumemarker.koplugin"]
+	path = resumemarker.koplugin
+	url = https://github.com/birosrichard/resumemarker.koplugin.git
