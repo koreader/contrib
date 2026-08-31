@@ -306,3 +306,7 @@
 [submodule "resumemarker.koplugin"]
 	path = resumemarker.koplugin
 	url = https://github.com/birosrichard/resumemarker.koplugin.git
+[submodule "mri.koplugin"]
+	path = mri.koplugin
+	url = https://github.com/frankshiii/mri.git
+	branch = koreader-contrib
