@@ -309,3 +309,7 @@
 [submodule "unitlens.koplugin"]
 	path = unitlens.koplugin
 	url = https://github.com/farengeyt451/unitlens.koplugin
+[submodule "mri.koplugin"]
+	path = mri.koplugin
+	url = https://github.com/frankshiii/mri.git
+	branch = koreader-contrib
