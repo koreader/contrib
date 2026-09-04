@@ -326,3 +326,6 @@
 	path = leadingmangazoom.koplugin
 	url = https://github.com/Auri3l/leadingmangazoom.koplugin.git
 	branch = koreader-contrib
+[submodule "storefront.koplugin"]
+	path = storefront.koplugin
+	url = https://github.com/ultimatejimmy/storefront.koplugin.git
