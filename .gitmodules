@@ -316,3 +316,6 @@
 [submodule "charart.koplugin"]
 	path = charart.koplugin
 	url = https://github.com/afzafri/charart.koplugin.git
+[submodule "xray.koplugin"]
+	path = xray.koplugin
+	url = https://github.com/ultimatejimmy/xray.koplugin.git
