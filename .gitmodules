@@ -316,3 +316,6 @@
 [submodule "charart.koplugin"]
 	path = charart.koplugin
 	url = https://github.com/afzafri/charart.koplugin.git
+[submodule "libbee.koplugin"]
+	path = libbee.koplugin
+	url = https://github.com/ultimatejimmy/libbee.git
