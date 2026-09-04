@@ -316,3 +316,6 @@
 [submodule "charart.koplugin"]
 	path = charart.koplugin
 	url = https://github.com/afzafri/charart.koplugin.git
+[submodule "storefront.koplugin"]
+	path = storefront.koplugin
+	url = https://github.com/ultimatejimmy/storefront.koplugin.git
