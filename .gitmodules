@@ -319,3 +319,6 @@
 [submodule "xray.koplugin"]
 	path = xray.koplugin
 	url = https://github.com/ultimatejimmy/xray.koplugin.git
+[submodule "dual_wiki.koplugin"]
+	path = dual_wiki.koplugin
+	url = https://github.com/YeYinYing/koreader-dual-wiki.git
