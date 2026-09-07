@@ -322,3 +322,7 @@
 [submodule "dual_wiki.koplugin"]
 	path = dual_wiki.koplugin
 	url = https://github.com/YeYinYing/koreader-dual-wiki.git
+[submodule "leadingmangazoom.koplugin"]
+	path = leadingmangazoom.koplugin
+	url = https://github.com/Auri3l/leadingmangazoom.koplugin.git
+	branch = koreader-contrib
