@@ -205,9 +205,15 @@
 [submodule "checkers.koplugin"]
 	path = checkers.koplugin
 	url = https://github.com/kbarni/checkers.koplugin
-[submodule "zen_ui.koplugin"]
-	path = zen_ui.koplugin
-	url = https://github.com/AnthonyGress/zen_ui.koplugin
+[submodule "zen-fm"]
+	path = zen-fm
+	url = https://github.com/xZenLabs/zen-fm.git
+[submodule "zen-os"]
+	path = zen-os
+	url = https://github.com/xZenLabs/zen-os.git
+[submodule "zen-pm"]
+	path = zen-pm
+	url = https://github.com/xZenLabs/zen-pm.git
 [submodule "readeck.koplugin"]
 	path = readeck.koplugin
 	url = https://github.com/iceyear/readeck.koplugin.git
