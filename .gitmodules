@@ -335,3 +335,6 @@
 [submodule "storefront.koplugin"]
 	path = storefront.koplugin
 	url = https://github.com/ultimatejimmy/storefront.koplugin.git
+[submodule "suwayomi.koplugin"]
+	path = suwayomi.koplugin
+	url = https://github.com/LK4D4/suwayomi.koplugin.git
