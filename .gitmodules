@@ -341,3 +341,7 @@
 [submodule "drawingboard.koplugin"]
 	path = drawingboard.koplugin
 	url = https://github.com/eznas/drawingboard.koplugin.git
+[submodule "ink-away.koplugin"]
+	path = ink-away.koplugin
+	url = https://github.com/EmirErtorer/ink-away.koplugin.git
+	branch = main
