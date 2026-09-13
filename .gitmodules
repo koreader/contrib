@@ -338,3 +338,6 @@
 [submodule "suwayomi.koplugin"]
 	path = suwayomi.koplugin
 	url = https://github.com/LK4D4/suwayomi.koplugin.git
+[submodule "drawingboard.koplugin"]
+	path = drawingboard.koplugin
+	url = https://github.com/eznas/drawingboard.koplugin.git
