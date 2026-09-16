@@ -348,3 +348,6 @@
 [submodule "page_scrubber.koplugin"]
 	path = page_scrubber.koplugin
 	url = https://github.com/lautaroelkin/page_scrubber.koplugin
+[submodule "units.koplugin"]
+	path = units.koplugin
+	url = https://github.com/liskin/units.koplugin
