@@ -353,4 +353,4 @@
 	url = https://github.com/liskin/units.koplugin
 [submodule "weatherlockscreen.koplugin"]
 	path = weatherlockscreen.koplugin
-	url = git@github.com:loeffner/WeatherLockscreen.git
+	url = https://github.com/loeffner/WeatherLockscreen.git
