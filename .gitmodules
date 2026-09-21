@@ -354,3 +354,6 @@
 [submodule "weatherlockscreen.koplugin"]
 	path = weatherlockscreen.koplugin
 	url = https://github.com/loeffner/WeatherLockscreen.git
+[submodule "bookcard.koplugin"]
+	path = bookcard.koplugin
+	url = https://github.com/peterboda236/bookcard.koplugin.git
