@@ -357,3 +357,6 @@
 [submodule "bookcard.koplugin"]
 	path = bookcard.koplugin
 	url = https://github.com/peterboda236/bookcard.koplugin.git
+[submodule "mybibliotheca.koplugin"]
+	path = mybibliotheca.koplugin
+	url = https://github.com/pickles4evaaaa/mybibliotheca.koplugin.git
