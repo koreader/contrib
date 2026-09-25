@@ -360,3 +360,6 @@
 [submodule "mybibliotheca.koplugin"]
 	path = mybibliotheca.koplugin
 	url = https://github.com/pickles4evaaaa/mybibliotheca.koplugin.git
+[submodule "goodreads.koplugin"]
+	path = goodreads.koplugin
+	url = https://github.com/advokatb/goodreads.koplugin.git
