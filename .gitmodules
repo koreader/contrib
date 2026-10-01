@@ -366,3 +366,6 @@
 [submodule "backup.koplugin"]
 	path = backup.koplugin
 	url = https://github.com/ultimatejimmy/backup.koplugin.git
+[submodule "notebook.koplugin"]
+	path = notebook.koplugin
+	url = https://github.com/pierspad/notebook.koplugin.git
