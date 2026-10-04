@@ -369,3 +369,6 @@
 [submodule "notebook.koplugin"]
 	path = notebook.koplugin
 	url = https://github.com/pierspad/notebook.koplugin.git
+[submodule "typoscope.koplugin"]
+	path = typoscope.koplugin
+	url = https://github.com/hashb/typoscope.koplugin.git
