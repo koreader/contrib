@@ -372,3 +372,6 @@
 [submodule "typoscope.koplugin"]
 	path = typoscope.koplugin
 	url = https://github.com/hashb/typoscope.koplugin.git
+[submodule "provider-pastreads.koplugin"]
+	path = provider-pastreads.koplugin
+	url = https://github.com/Jordy-A/provider-pastreads.koplugin.git
