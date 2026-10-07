@@ -375,3 +375,6 @@
 [submodule "provider-pastreads.koplugin"]
 	path = provider-pastreads.koplugin
 	url = https://github.com/Jordy-A/provider-pastreads.koplugin.git
+[submodule "solariconpack.koplugin"]
+	path = solariconpack.koplugin
+	url = https://github.com/pxlflux/solariconpack.koplugin
