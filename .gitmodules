@@ -360,3 +360,21 @@
 [submodule "mybibliotheca.koplugin"]
 	path = mybibliotheca.koplugin
 	url = https://github.com/pickles4evaaaa/mybibliotheca.koplugin.git
+[submodule "goodreads.koplugin"]
+	path = goodreads.koplugin
+	url = https://github.com/advokatb/goodreads.koplugin.git
+[submodule "backup.koplugin"]
+	path = backup.koplugin
+	url = https://github.com/ultimatejimmy/backup.koplugin.git
+[submodule "notebook.koplugin"]
+	path = notebook.koplugin
+	url = https://github.com/pierspad/notebook.koplugin.git
+[submodule "typoscope.koplugin"]
+	path = typoscope.koplugin
+	url = https://github.com/hashb/typoscope.koplugin.git
+[submodule "provider-pastreads.koplugin"]
+	path = provider-pastreads.koplugin
+	url = https://github.com/Jordy-A/provider-pastreads.koplugin.git
+[submodule "solariconpack.koplugin"]
+	path = solariconpack.koplugin
+	url = https://github.com/pxlflux/solariconpack.koplugin
