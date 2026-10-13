@@ -378,3 +378,6 @@
 [submodule "solariconpack.koplugin"]
 	path = solariconpack.koplugin
 	url = https://github.com/pxlflux/solariconpack.koplugin
+[submodule "screvi.koplugin"]
+	path = screvi.koplugin
+	url = https://github.com/screvi/screvi-koreader-plugin.git
