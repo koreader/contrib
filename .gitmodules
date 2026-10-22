@@ -381,3 +381,6 @@
 [submodule "screvi.koplugin"]
 	path = screvi.koplugin
 	url = https://github.com/screvi/screvi-koreader-plugin.git
+[submodule "tomedown.koplugin"]
+	path = tomedown.koplugin
+	url = https://github.com/imanubdesigner/tomedown.koplugin.git
