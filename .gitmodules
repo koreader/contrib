@@ -384,3 +384,6 @@
 [submodule "tomedown.koplugin"]
 	path = tomedown.koplugin
 	url = https://github.com/imanubdesigner/tomedown.koplugin.git
+[submodule "CyberUI.koplugin"]
+	path = CyberUI.koplugin
+	url = https://github.com/EmirErtorer/CyberUI.koplugin.git
