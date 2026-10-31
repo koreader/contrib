@@ -387,3 +387,6 @@
 [submodule "CyberUI.koplugin"]
 	path = CyberUI.koplugin
 	url = https://github.com/EmirErtorer/CyberUI.koplugin.git
+[submodule "kmatrix.koplugin"]
+	path = kmatrix.koplugin
+	url = https://github.com/nu-code-dev/kmatrix-koreader.git
