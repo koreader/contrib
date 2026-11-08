@@ -393,3 +393,6 @@
 [submodule "chapter_summariser.koplugin"]
 	path = chapter_summariser.koplugin
 	url = https://github.com/kar1walsh/chapter_summariser.koplugin.git
+[submodule "plugins/vineta.koplugin"]
+	path = plugins/vineta.koplugin
+	url = https://github.com/EnterSanzMan/vineta_koreader.git
