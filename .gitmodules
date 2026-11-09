@@ -396,3 +396,6 @@
 [submodule "plugins/vineta.koplugin"]
 	path = plugins/vineta.koplugin
 	url = https://github.com/EnterSanzMan/vineta_koreader.git
+[submodule "opds_plus.koplugin"]
+	path = opds_plus.koplugin
+	url = https://github.com/greywolf1499/opds_plus.koplugin.git
