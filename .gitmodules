@@ -399,3 +399,6 @@
 [submodule "opds_plus.koplugin"]
 	path = opds_plus.koplugin
 	url = https://github.com/greywolf1499/opds_plus.koplugin.git
+[submodule "fixmyscan.koplugin"]
+	path = fixmyscan.koplugin
+	url = https://github.com/fightme-cmd/fixmyscan.koplugin.git
