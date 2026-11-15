@@ -338,3 +338,9 @@
 [submodule "suwayomi.koplugin"]
 	path = suwayomi.koplugin
 	url = https://github.com/LK4D4/suwayomi.koplugin.git
+[submodule "imeplus.koplugin"]
+	path = imeplus.koplugin
+	url = https://github.com/eznas/imeplus.koplugin
+[submodule "vterm.koplugin"]
+	path = vterm.koplugin
+	url = https://github.com/eznas/vterm.koplugin
