@@ -402,3 +402,6 @@
 [submodule "fixmyscan.koplugin"]
 	path = fixmyscan.koplugin
 	url = https://github.com/fightme-cmd/fixmyscan.koplugin.git
+[submodule "koreader-chinese-helper"]
+	path = koreader-chinese-helper
+	url = https://github.com/scartoon/koreader-chinese-helper.git
