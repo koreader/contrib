@@ -408,3 +408,6 @@
 [submodule "audiobook.koplugin"]
 	path = audiobook.koplugin
 	url = https://github.com/stradichenko/audiobook.koplugin.git
+[submodule "fastpage.koplugin"]
+	path = fastpage.koplugin
+	url = https://github.com/eznas/fastpage.koplugin
