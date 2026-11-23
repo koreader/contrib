@@ -411,3 +411,6 @@
 [submodule "fastpage.koplugin"]
 	path = fastpage.koplugin
 	url = https://github.com/eznas/fastpage.koplugin
+[submodule "shelfmark.koplugin"]
+	path = shelfmark.koplugin
+	url = https://github.com/SyntaxSorcerer7/shelfmark.koplugin.git
