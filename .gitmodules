@@ -414,3 +414,6 @@
 [submodule "shelfmark.koplugin"]
 	path = shelfmark.koplugin
 	url = https://github.com/SyntaxSorcerer7/shelfmark.koplugin.git
+[submodule "vncoxide.koplugin"]
+	path = vncoxide.koplugin
+	url = https://github.com/KopiasCsaba/vncoxide.koplugin.git
