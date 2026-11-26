@@ -344,3 +344,79 @@
 [submodule "imebar.koplugin"]
 	path = imebar.koplugin
 	url = https://github.com/eznas/imebar.koplugin.git
+[submodule "drawingboard.koplugin"]
+	path = drawingboard.koplugin
+	url = https://github.com/eznas/drawingboard.koplugin.git
+[submodule "ink-away.koplugin"]
+	path = ink-away.koplugin
+	url = https://github.com/EmirErtorer/ink-away.koplugin.git
+	branch = main
+[submodule "page_scrubber.koplugin"]
+	path = page_scrubber.koplugin
+	url = https://github.com/lautaroelkin/page_scrubber.koplugin
+[submodule "units.koplugin"]
+	path = units.koplugin
+	url = https://github.com/liskin/units.koplugin
+[submodule "weatherlockscreen.koplugin"]
+	path = weatherlockscreen.koplugin
+	url = https://github.com/loeffner/WeatherLockscreen.git
+[submodule "bookcard.koplugin"]
+	path = bookcard.koplugin
+	url = https://github.com/peterboda236/bookcard.koplugin.git
+[submodule "mybibliotheca.koplugin"]
+	path = mybibliotheca.koplugin
+	url = https://github.com/pickles4evaaaa/mybibliotheca.koplugin.git
+[submodule "goodreads.koplugin"]
+	path = goodreads.koplugin
+	url = https://github.com/advokatb/goodreads.koplugin.git
+[submodule "backup.koplugin"]
+	path = backup.koplugin
+	url = https://github.com/ultimatejimmy/backup.koplugin.git
+[submodule "notebook.koplugin"]
+	path = notebook.koplugin
+	url = https://github.com/pierspad/notebook.koplugin.git
+[submodule "typoscope.koplugin"]
+	path = typoscope.koplugin
+	url = https://github.com/hashb/typoscope.koplugin.git
+[submodule "provider-pastreads.koplugin"]
+	path = provider-pastreads.koplugin
+	url = https://github.com/Jordy-A/provider-pastreads.koplugin.git
+[submodule "solariconpack.koplugin"]
+	path = solariconpack.koplugin
+	url = https://github.com/pxlflux/solariconpack.koplugin
+[submodule "screvi.koplugin"]
+	path = screvi.koplugin
+	url = https://github.com/screvi/screvi-koreader-plugin.git
+[submodule "tomedown.koplugin"]
+	path = tomedown.koplugin
+	url = https://github.com/imanubdesigner/tomedown.koplugin.git
+[submodule "CyberUI.koplugin"]
+	path = CyberUI.koplugin
+	url = https://github.com/EmirErtorer/CyberUI.koplugin.git
+[submodule "kmatrix.koplugin"]
+	path = kmatrix.koplugin
+	url = https://github.com/nu-code-dev/kmatrix-koreader.git
+[submodule "chapter_summariser.koplugin"]
+	path = chapter_summariser.koplugin
+	url = https://github.com/kar1walsh/chapter_summariser.koplugin.git
+[submodule "plugins/vineta.koplugin"]
+	path = plugins/vineta.koplugin
+	url = https://github.com/EnterSanzMan/vineta_koreader.git
+[submodule "opds_plus.koplugin"]
+	path = opds_plus.koplugin
+	url = https://github.com/greywolf1499/opds_plus.koplugin.git
+[submodule "fixmyscan.koplugin"]
+	path = fixmyscan.koplugin
+	url = https://github.com/fightme-cmd/fixmyscan.koplugin.git
+[submodule "koreader-chinese-helper"]
+	path = koreader-chinese-helper
+	url = https://github.com/scartoon/koreader-chinese-helper.git
+[submodule "audiobook.koplugin"]
+	path = audiobook.koplugin
+	url = https://github.com/stradichenko/audiobook.koplugin.git
+[submodule "fastpage.koplugin"]
+	path = fastpage.koplugin
+	url = https://github.com/eznas/fastpage.koplugin
+[submodule "shelfmark.koplugin"]
+	path = shelfmark.koplugin
+	url = https://github.com/SyntaxSorcerer7/shelfmark.koplugin.git
