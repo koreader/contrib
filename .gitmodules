@@ -423,3 +423,6 @@
 [submodule "vncoxide.koplugin"]
 	path = vncoxide.koplugin
 	url = https://github.com/KopiasCsaba/vncoxide.koplugin.git
+[submodule "panelsplus.koplugin"]
+	path = panelsplus.koplugin
+	url = https://github.com/KristanLaimon/PanelsPlus.git
